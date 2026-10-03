@@ -10,6 +10,7 @@ export default defineConfig({
       "@burnrate/core": src("./packages/core/src/index.ts"),
       "@burnrate/pricing": src("./packages/pricing/src/index.ts"),
       "@burnrate/adapter-claude-code": src("./packages/adapters/claude-code/src/index.ts"),
+      "@burnrate/store": src("./packages/store/src/index.ts"),
     },
   },
   test: {
