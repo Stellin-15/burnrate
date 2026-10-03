@@ -591,3 +591,19 @@ details.export[open] .menu {
     display: none;
   }
 }
+
+/* Real Claude plan limits, above the statement */
+.plan-limits {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 8px 40px;
+  padding-bottom: 20px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--rule);
+}
+.plan-limits .budget-note {
+  grid-column: 1 / -1;
+}
+.plan-limits .budget-head strong {
+  white-space: nowrap;
+}
