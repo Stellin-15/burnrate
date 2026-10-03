@@ -52,6 +52,10 @@ export function eventCost(e: TokenCounts & { model: string }): number | undefine
 /** All tokens that count toward usage (cache reads included). */
 export function totalTokens(e: TokenCounts): number {
   return (
-    e.inputTokens + e.outputTokens + (e.cacheReadTokens ?? 0) + (e.cacheWriteTokens ?? 0) + (e.cacheWrite1hTokens ?? 0)
+    e.inputTokens +
+    e.outputTokens +
+    (e.cacheReadTokens ?? 0) +
+    (e.cacheWriteTokens ?? 0) +
+    (e.cacheWrite1hTokens ?? 0)
   );
 }

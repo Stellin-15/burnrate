@@ -128,7 +128,10 @@ describe("projectFromSamples", () => {
 
 describe("aggregate", () => {
   it("totals cost and tracks unpriced requests", () => {
-    const t = sumEvents([ev("2026-10-01T10:00:00Z"), ev("2026-10-01T10:00:00Z", 10, { model: "mystery-model" })]);
+    const t = sumEvents([
+      ev("2026-10-01T10:00:00Z"),
+      ev("2026-10-01T10:00:00Z", 10, { model: "mystery-model" }),
+    ]);
     expect(t.requests).toBe(2);
     expect(t.costUsd).toBeCloseTo(1, 6);
     expect(t.unpricedRequests).toBe(1);

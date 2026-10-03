@@ -14,7 +14,11 @@ export function createClaudeCodeAdapter(opts: { extraDirs?: string[]; cachePath?
       return claudeConfigDirs(opts.extraDirs).length > 0;
     },
     async *readEvents(since: Date): AsyncIterable<UsageEvent> {
-      yield* loadClaudeCodeEvents({ dirs: claudeConfigDirs(opts.extraDirs), since, cachePath: opts.cachePath });
+      yield* loadClaudeCodeEvents({
+        dirs: claudeConfigDirs(opts.extraDirs),
+        since,
+        cachePath: opts.cachePath,
+      });
     },
   };
 }

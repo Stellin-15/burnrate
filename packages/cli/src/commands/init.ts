@@ -2,7 +2,12 @@ import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { burnrateHome, loadConfig } from "@burnrate/core";
 import { claudeConfigDirs, claudeSettingsPath, loadClaudeCodeEvents } from "@burnrate/adapter-claude-code";
-import { installStatusLine, uninstallStatusLine, type InstallRecord, type StatusLineSetting } from "../claude-settings.js";
+import {
+  installStatusLine,
+  uninstallStatusLine,
+  type InstallRecord,
+  type StatusLineSetting,
+} from "../claude-settings.js";
 import { readJson, writeJsonQuiet } from "../summary.js";
 
 const recordPath = () => join(burnrateHome(), "state", "claude-code-install.json");
@@ -30,24 +35,32 @@ export interface InitArgs {
 
 export async function runInit(args: InitArgs): Promise<number> {
   if (args.tool !== "claude-code") {
-    console.error(args.tool ? `Unknown tool "${args.tool}". Supported: claude-code` : "Usage: burnrate init claude-code");
+    console.error(
+      args.tool ? `Unknown tool "${args.tool}". Supported: claude-code` : "Usage: burnrate init claude-code",
+    );
     return 2;
   }
   const settingsPath = claudeSettingsPath();
-  const next: StatusLineSetting = { type: "command", command: args.command ?? defaultStatuslineCommand(), padding: 0 };
+  const next: StatusLineSetting = {
+    type: "command",
+    command: args.command ?? defaultStatuslineCommand(),
+    padding: 0,
+  };
   // Reset countdowns tick even while idle only if Claude Code re-runs us; 60s keeps them honest at negligible cost.
   next.refreshInterval = args.refresh ?? 60;
 
   const result = installStatusLine(settingsPath, next, { force: args.force, dryRun: args.dryRun });
   if (!result.ok) {
     console.error(result.message);
-    if (result.existing !== undefined) console.error(`\nCurrent statusLine:\n${JSON.stringify(result.existing, null, 2)}`);
+    if (result.existing !== undefined)
+      console.error(`\nCurrent statusLine:\n${JSON.stringify(result.existing, null, 2)}`);
     return 1;
   }
 
   if (args.dryRun) {
     console.log(`Dry run: would set statusLine in ${settingsPath} to:\n${JSON.stringify(next, null, 2)}`);
-    if (result.previous !== undefined) console.log(`\nReplacing:\n${JSON.stringify(result.previous, null, 2)}`);
+    if (result.previous !== undefined)
+      console.log(`\nReplacing:\n${JSON.stringify(result.previous, null, 2)}`);
     return 0;
   }
   if (!result.changed) {
@@ -76,7 +89,9 @@ export async function runInit(args: InitArgs): Promise<number> {
     });
     console.log(`  Indexed ${events.length} requests from the last 8 days in ${Date.now() - started}ms.`);
   } else {
-    console.log("  No Claude Code transcripts found yet. That's fine; the meter fills in once you use Claude Code.");
+    console.log(
+      "  No Claude Code transcripts found yet. That's fine; the meter fills in once you use Claude Code.",
+    );
   }
   console.log("\nSend a message in Claude Code (or restart it) to see the meter.");
   console.log("Preview themes:  burnrate statusline --demo --theme minimal");
@@ -91,13 +106,17 @@ export async function runUninstall(args: { tool?: string }): Promise<number> {
   }
   const settingsPath = claudeSettingsPath();
   const record = readJson<InstallRecord>(recordPath());
-  const result = uninstallStatusLine(settingsPath, record?.settingsPath === settingsPath ? record : undefined);
+  const result = uninstallStatusLine(
+    settingsPath,
+    record?.settingsPath === settingsPath ? record : undefined,
+  );
   if (!result.ok) {
     console.error(result.message);
     return 1;
   }
   if (!result.changed) console.log(`No statusLine in ${settingsPath}. Nothing to do.`);
-  else if (result.restored !== undefined) console.log(`✓ Removed BurnRate and restored your previous status line in ${settingsPath}`);
+  else if (result.restored !== undefined)
+    console.log(`✓ Removed BurnRate and restored your previous status line in ${settingsPath}`);
   else console.log(`✓ Removed BurnRate status line from ${settingsPath}`);
   return 0;
 }

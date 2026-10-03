@@ -109,13 +109,15 @@ export function resolveConfig(raw: unknown): { config: BurnrateConfig; warnings:
   if (raw.widgets !== undefined) {
     if (Array.isArray(raw.widgets)) {
       const bad = raw.widgets.filter((w) => !(WIDGETS as readonly unknown[]).includes(w));
-      if (bad.length) warnings.push(`unknown widget(s) ignored: ${bad.join(", ")}. Valid: ${WIDGETS.join(", ")}`);
+      if (bad.length)
+        warnings.push(`unknown widget(s) ignored: ${bad.join(", ")}. Valid: ${WIDGETS.join(", ")}`);
       c.widgets = raw.widgets.filter((w): w is WidgetId => (WIDGETS as readonly unknown[]).includes(w));
     } else warnings.push("widgets must be an array");
   }
   if (raw.thresholds !== undefined) {
     const t = raw.thresholds;
-    if (isObj(t) && posNum(t.warn) && posNum(t.danger) && t.warn < t.danger) c.thresholds = { warn: t.warn, danger: t.danger };
+    if (isObj(t) && posNum(t.warn) && posNum(t.danger) && t.warn < t.danger)
+      c.thresholds = { warn: t.warn, danger: t.danger };
     else warnings.push("thresholds must be {warn, danger} with 0 < warn < danger");
   }
   if (raw.barWidth !== undefined) {
@@ -132,7 +134,12 @@ export function resolveConfig(raw: unknown): { config: BurnrateConfig; warnings:
   }
   if (raw.currency !== undefined) {
     const cur = raw.currency;
-    if (isObj(cur) && typeof cur.code === "string" && typeof cur.symbol === "string" && posNum(cur.rateFromUsd))
+    if (
+      isObj(cur) &&
+      typeof cur.code === "string" &&
+      typeof cur.symbol === "string" &&
+      posNum(cur.rateFromUsd)
+    )
       c.currency = { code: cur.code, symbol: cur.symbol, rateFromUsd: cur.rateFromUsd };
     else warnings.push('currency must be {"code": "EUR", "symbol": "€", "rateFromUsd": 0.92}');
   }
@@ -141,7 +148,8 @@ export function resolveConfig(raw: unknown): { config: BurnrateConfig; warnings:
     else warnings.push("cacheSeconds must be a number >= 0");
   }
   if (raw.claudeDirs !== undefined) {
-    if (Array.isArray(raw.claudeDirs) && raw.claudeDirs.every((d) => typeof d === "string")) c.claudeDirs = raw.claudeDirs;
+    if (Array.isArray(raw.claudeDirs) && raw.claudeDirs.every((d) => typeof d === "string"))
+      c.claudeDirs = raw.claudeDirs;
     else warnings.push("claudeDirs must be an array of paths");
   }
   return { config: c, warnings };
@@ -149,7 +157,8 @@ export function resolveConfig(raw: unknown): { config: BurnrateConfig; warnings:
 
 /** Load the config file if present. Never throws: a broken file yields defaults plus a warning. */
 export function loadConfig(path = configPath()): LoadedConfig {
-  if (!existsSync(path)) return { config: structuredClone(DEFAULT_CONFIG), path, exists: false, warnings: [] };
+  if (!existsSync(path))
+    return { config: structuredClone(DEFAULT_CONFIG), path, exists: false, warnings: [] };
   let raw: unknown;
   try {
     raw = JSON.parse(readFileSync(path, "utf8"));

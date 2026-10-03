@@ -15,12 +15,14 @@ export function validatePricingTable(table: unknown): string[] {
   if (t.version !== 1) errors.push(`unsupported version ${String(t.version)}`);
   if (typeof t.updatedAt !== "string" || !DATE.test(t.updatedAt)) errors.push("updatedAt must be YYYY-MM-DD");
   if (t.currency !== "USD") errors.push("currency must be USD");
-  if (!Array.isArray(t.models) || t.models.length === 0) return [...errors, "models must be a non-empty array"];
+  if (!Array.isArray(t.models) || t.models.length === 0)
+    return [...errors, "models must be a non-empty array"];
 
   const owners = new Map<string, string>();
   const claim = (key: string, owner: string, where: string) => {
     const prev = owners.get(key);
-    if (prev !== undefined && (prev !== owner || key === owner)) errors.push(`${where}: "${key}" is already used by ${prev}`);
+    if (prev !== undefined && (prev !== owner || key === owner))
+      errors.push(`${where}: "${key}" is already used by ${prev}`);
     owners.set(key, owner);
   };
 
@@ -35,15 +37,18 @@ export function validatePricingTable(table: unknown): string[] {
     else claim(m.id, m.id, where);
     if (typeof m.provider !== "string" || !m.provider) errors.push(`${where}: provider is required`);
     if (typeof m.displayName !== "string" || !m.displayName) errors.push(`${where}: displayName is required`);
-    if (!STATUSES.has(m.status as string)) errors.push(`${where}: status must be one of ${[...STATUSES].join(", ")}`);
+    if (!STATUSES.has(m.status as string))
+      errors.push(`${where}: status must be one of ${[...STATUSES].join(", ")}`);
     if (typeof m.source !== "string" || !m.source.startsWith("https://"))
       errors.push(`${where}: source must be an https URL`);
-    if (typeof m.updatedAt !== "string" || !DATE.test(m.updatedAt)) errors.push(`${where}: updatedAt must be YYYY-MM-DD`);
+    if (typeof m.updatedAt !== "string" || !DATE.test(m.updatedAt))
+      errors.push(`${where}: updatedAt must be YYYY-MM-DD`);
 
     const p = m.prices;
     if (!p || typeof p !== "object") errors.push(`${where}: prices is required`);
     else {
-      for (const k of PRICE_KEYS) if (!isPrice(p[k])) errors.push(`${where}: prices.${k} must be a number >= 0`);
+      for (const k of PRICE_KEYS)
+        if (!isPrice(p[k])) errors.push(`${where}: prices.${k} must be a number >= 0`);
       if (isPrice(p.cacheRead) && isPrice(p.input) && p.cacheRead > p.input)
         errors.push(`${where}: prices.cacheRead should not exceed prices.input`);
     }

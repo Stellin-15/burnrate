@@ -30,7 +30,13 @@ export function computeBlocks(events: Iterable<UsageEvent>, windowMs = FIVE_HOUR
     if (!current || t >= current.end) {
       const start = new Date(t);
       start.setMinutes(0, 0, 0);
-      current = { start, end: new Date(start.getTime() + windowMs), firstActivity: t, lastActivity: t, totals: emptyTotals() };
+      current = {
+        start,
+        end: new Date(start.getTime() + windowMs),
+        firstActivity: t,
+        lastActivity: t,
+        totals: emptyTotals(),
+      };
       blocks.push(current);
     }
     current.lastActivity = t;
@@ -40,14 +46,22 @@ export function computeBlocks(events: Iterable<UsageEvent>, windowMs = FIVE_HOUR
 }
 
 /** The block that contains `now`, if any. */
-export function activeBlock(events: Iterable<UsageEvent>, now = new Date(), windowMs = FIVE_HOURS): UsageBlock | undefined {
+export function activeBlock(
+  events: Iterable<UsageEvent>,
+  now = new Date(),
+  windowMs = FIVE_HOURS,
+): UsageBlock | undefined {
   const blocks = computeBlocks(events, windowMs);
   const last = blocks.at(-1);
   return last && now >= last.start && now < last.end ? last : undefined;
 }
 
 /** Totals for events in the trailing window ending at `now`. */
-export function rollingTotals(events: Iterable<UsageEvent>, now = new Date(), windowMs = SEVEN_DAYS): UsageTotals {
+export function rollingTotals(
+  events: Iterable<UsageEvent>,
+  now = new Date(),
+  windowMs = SEVEN_DAYS,
+): UsageTotals {
   const from = now.getTime() - windowMs;
   const t = emptyTotals();
   for (const e of events) {
@@ -86,7 +100,11 @@ export interface LimitEstimate {
 }
 
 /** Estimate how much of a configured limit the block has used, and when it would run out. */
-export function estimateBlockLimit(block: UsageBlock, limit: WindowLimit, now = new Date()): LimitEstimate | undefined {
+export function estimateBlockLimit(
+  block: UsageBlock,
+  limit: WindowLimit,
+  now = new Date(),
+): LimitEstimate | undefined {
   const used = limit.costUsd ? block.totals.costUsd : block.totals.totalTokens;
   const cap = limit.costUsd ?? limit.tokens;
   if (!cap || cap <= 0) return undefined;

@@ -71,37 +71,51 @@ export function renderStatusLine(m: StatusModel, opts: RenderOptions): string {
 
   const windowWidget = (name: string, w: WindowView | undefined, withBar: boolean): string | undefined => {
     if (!w) return undefined;
-    if (w.percent === undefined) return w.costUsd !== undefined ? `${label(name)} ${money(w.costUsd)}` : undefined;
+    if (w.percent === undefined)
+      return w.costUsd !== undefined ? `${label(name)} ${money(w.costUsd)}` : undefined;
     const c = levelColor(w.percent, config);
     const pct = `${w.estimated ? "~" : ""}${formatPercent(w.percent)}`;
     const parts = [label(name)];
     if (withBar) parts.push(paint(c, bar(w.percent, config.barWidth, plain)));
     parts.push(paint(c, pct));
-    if (w.resetsAt !== undefined && w.resetsAt > now) parts.push(label(`${resetIcon}${formatDuration(w.resetsAt - now)}`));
-    if (w.msToLimit !== undefined) parts.push(paint("red", `${warnIcon} limit in ${formatDuration(w.msToLimit)}`));
+    if (w.resetsAt !== undefined && w.resetsAt > now)
+      parts.push(label(`${resetIcon}${formatDuration(w.resetsAt - now)}`));
+    if (w.msToLimit !== undefined)
+      parts.push(paint("red", `${warnIcon} limit in ${formatDuration(w.msToLimit)}`));
     return parts.join(" ");
   };
 
   const widgets: Record<WidgetId, () => string | undefined> = {
-    model: () => (m.model ? paint("bold", m.model) + (m.fast ? paint("magenta", plain ? " fast" : " ⚡") : "") : undefined),
+    model: () =>
+      m.model
+        ? paint("bold", m.model) + (m.fast ? paint("magenta", plain ? " fast" : " ⚡") : "")
+        : undefined,
     fiveHour: () => windowWidget("5h", m.fiveHour, showBars),
     sevenDay: () => windowWidget("7d", m.sevenDay, false),
     spendLimit: () => {
       const s = m.spendLimit;
       if (!s) return undefined;
       const c = levelColor(s.percent, config);
-      const amount = s.usedUsd !== undefined && s.limitUsd !== undefined ? `${money(s.usedUsd)}/${money(s.limitUsd)} ` : "";
+      const amount =
+        s.usedUsd !== undefined && s.limitUsd !== undefined
+          ? `${money(s.usedUsd)}/${money(s.limitUsd)} `
+          : "";
       return `${label("spend")} ${paint(c, `${amount}${formatPercent(s.percent)}`)}`;
     },
     context: () =>
       m.contextPercent === undefined
         ? undefined
         : `${label("ctx")} ${paint(levelColor(m.contextPercent, config), formatPercent(m.contextPercent))}`,
-    sessionCost: () => (m.sessionCostUsd === undefined ? undefined : `${money(m.sessionCostUsd)} ${label("session")}`),
-    todayCost: () => (m.todayCostUsd === undefined ? undefined : `${money(m.todayCostUsd)} ${label("today")}`),
-    blockCost: () => (m.blockCostUsd === undefined ? undefined : `${money(m.blockCostUsd)} ${label("block")}`),
+    sessionCost: () =>
+      m.sessionCostUsd === undefined ? undefined : `${money(m.sessionCostUsd)} ${label("session")}`,
+    todayCost: () =>
+      m.todayCostUsd === undefined ? undefined : `${money(m.todayCostUsd)} ${label("today")}`,
+    blockCost: () =>
+      m.blockCostUsd === undefined ? undefined : `${money(m.blockCostUsd)} ${label("block")}`,
     burnRate: () =>
-      m.burnRatePerHour === undefined || m.burnRatePerHour <= 0 ? undefined : `${money(m.burnRatePerHour)}${label("/h")}`,
+      m.burnRatePerHour === undefined || m.burnRatePerHour <= 0
+        ? undefined
+        : `${money(m.burnRatePerHour)}${label("/h")}`,
     cache: () =>
       m.cacheHitRatio === undefined ? undefined : `${label("cache")} ${formatPercent(m.cacheHitRatio * 100)}`,
   };

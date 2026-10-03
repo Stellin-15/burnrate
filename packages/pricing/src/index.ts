@@ -27,7 +27,9 @@ export function normalizeModelId(raw: string): string {
 }
 
 /** Build a memoized lookup over a pricing table (exact match after normalization, never prefix match). */
-export function createPricingLookup(table: PricingTable = pricingTable): (model: string) => ModelPricing | undefined {
+export function createPricingLookup(
+  table: PricingTable = pricingTable,
+): (model: string) => ModelPricing | undefined {
   const index = new Map<string, ModelPricing>();
   for (const m of table.models) {
     index.set(m.id, m);

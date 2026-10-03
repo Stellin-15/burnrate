@@ -57,7 +57,8 @@ export function computeSummary(events: UsageEvent[], config: BurnrateConfig, now
     if (est) summary.block.estimate = { usedPercent: est.usedPercent, msToLimit: est.msToLimit };
   }
   const weekEst = config.limits.sevenDay && estimateRollingLimit(events, config.limits.sevenDay, now);
-  if (weekEst) summary.sevenDay.estimate = { usedPercent: weekEst.usedPercent, resetsAt: weekEst.resetsAt.getTime() };
+  if (weekEst)
+    summary.sevenDay.estimate = { usedPercent: weekEst.usedPercent, resetsAt: weekEst.resetsAt.getTime() };
   return summary;
 }
 
@@ -89,7 +90,13 @@ export interface SampleState {
 const SAMPLE_SPAN_MS = 60 * 60 * 1000;
 
 /** Record a new sample, dropping samples from older windows or older than an hour. Mutates and returns state. */
-export function recordSample(state: SampleState, window: string, resetsAt: number, percent: number, now: number): SampleState {
+export function recordSample(
+  state: SampleState,
+  window: string,
+  resetsAt: number,
+  percent: number,
+  now: number,
+): SampleState {
   let w = state[window];
   // resets_at can jitter by a second between responses; treat anything within a minute as the same window.
   if (!w || Math.abs(w.resetsAt - resetsAt) > 60_000) w = { resetsAt, samples: [] };

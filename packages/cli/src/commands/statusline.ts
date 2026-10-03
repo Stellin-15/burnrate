@@ -17,7 +17,14 @@ import {
 } from "@burnrate/adapter-claude-code";
 import { colorEnabled } from "../ansi.js";
 import { renderStatusLine, type StatusModel } from "../render.js";
-import { computeSummary, readJson, recordSample, writeJsonQuiet, type LocalSummary, type SampleState } from "../summary.js";
+import {
+  computeSummary,
+  readJson,
+  recordSample,
+  writeJsonQuiet,
+  type LocalSummary,
+  type SampleState,
+} from "../summary.js";
 
 const WIDGETS_NEEDING_LOCAL = new Set(["todayCost", "blockCost", "burnRate"]);
 
@@ -109,7 +116,9 @@ export function buildStatusModel(
   }
   if (!m.sevenDay && local) {
     const est = local.sevenDay.estimate;
-    m.sevenDay = est ? { percent: est.usedPercent, estimated: true, resetsAt: est.resetsAt } : { costUsd: local.sevenDay.costUsd };
+    m.sevenDay = est
+      ? { percent: est.usedPercent, estimated: true, resetsAt: est.resetsAt }
+      : { costUsd: local.sevenDay.costUsd };
   }
 
   const sl = rl?.spend_limit;
@@ -164,13 +173,17 @@ export async function runStatusline(args: { demo?: boolean; theme?: string }): P
   const home = burnrateHome();
   const now = Date.now();
   const { config } = loadConfig();
-  if (args.theme && ["default", "minimal", "plain"].includes(args.theme)) config.theme = args.theme as BurnrateConfig["theme"];
+  if (args.theme && ["default", "minimal", "plain"].includes(args.theme))
+    config.theme = args.theme as BurnrateConfig["theme"];
   // Claude Code captures stdout (not a TTY) but renders ANSI, so color is on unless NO_COLOR is set.
   const color = !process.env.NO_COLOR;
   const columns = Number(process.env.COLUMNS) || undefined;
 
   if (args.demo) {
-    const demoConfig = { ...config, widgets: [...config.widgets, "blockCost", "burnRate", "cache"] as BurnrateConfig["widgets"] };
+    const demoConfig = {
+      ...config,
+      widgets: [...config.widgets, "blockCost", "burnRate", "cache"] as BurnrateConfig["widgets"],
+    };
     console.log(renderStatusLine(demoModel(now), { config: demoConfig, color: colorEnabled(), now }));
     return 0;
   }
@@ -193,7 +206,12 @@ export async function runStatusline(args: { demo?: boolean; theme?: string }): P
     if (samplesChanged) writeJsonQuiet(statePath, samples);
 
     const local = needsLocalData(input, config) ? getLocalSummary(config, home, new Date(now)) : undefined;
-    const line = renderStatusLine(buildStatusModel(input, local, samples, now), { config, color, columns, now });
+    const line = renderStatusLine(buildStatusModel(input, local, samples, now), {
+      config,
+      color,
+      columns,
+      now,
+    });
     process.stdout.write(line + "\n");
   } catch (err) {
     // Never break the user's status line: show what we can and log the rest.

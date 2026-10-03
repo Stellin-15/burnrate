@@ -18,14 +18,33 @@ export interface InstallRecord {
 }
 
 export type InstallResult =
-  | { ok: true; changed: boolean; backupPath?: string; previous?: unknown; next: StatusLineSetting; record: InstallRecord }
-  | { ok: false; reason: "invalid-json" | "not-object" | "foreign-statusline"; message: string; existing?: unknown };
+  | {
+      ok: true;
+      changed: boolean;
+      backupPath?: string;
+      previous?: unknown;
+      next: StatusLineSetting;
+      record: InstallRecord;
+    }
+  | {
+      ok: false;
+      reason: "invalid-json" | "not-object" | "foreign-statusline";
+      message: string;
+      existing?: unknown;
+    };
 
 const isOurs = (v: unknown): boolean =>
-  !!v && typeof v === "object" && typeof (v as { command?: unknown }).command === "string" &&
-  /burnrate/i.test((v as { command: string }).command) && /statusline/.test((v as { command: string }).command);
+  !!v &&
+  typeof v === "object" &&
+  typeof (v as { command?: unknown }).command === "string" &&
+  /burnrate/i.test((v as { command: string }).command) &&
+  /statusline/.test((v as { command: string }).command);
 
-function readSettings(path: string): { ok: true; data: Record<string, unknown>; raw?: string } | { ok: false; reason: "invalid-json" | "not-object"; message: string } {
+function readSettings(
+  path: string,
+):
+  | { ok: true; data: Record<string, unknown>; raw?: string }
+  | { ok: false; reason: "invalid-json" | "not-object"; message: string } {
   if (!existsSync(path)) return { ok: true, data: {} };
   const raw = readFileSync(path, "utf8");
   if (!raw.trim()) return { ok: true, data: {}, raw };
@@ -33,10 +52,18 @@ function readSettings(path: string): { ok: true; data: Record<string, unknown>; 
   try {
     data = JSON.parse(raw);
   } catch (err) {
-    return { ok: false, reason: "invalid-json", message: `${path} is not valid JSON (${(err as Error).message}). Fix it first; nothing was changed.` };
+    return {
+      ok: false,
+      reason: "invalid-json",
+      message: `${path} is not valid JSON (${(err as Error).message}). Fix it first; nothing was changed.`,
+    };
   }
   if (!data || typeof data !== "object" || Array.isArray(data))
-    return { ok: false, reason: "not-object", message: `${path} must contain a JSON object. Nothing was changed.` };
+    return {
+      ok: false,
+      reason: "not-object",
+      message: `${path} must contain a JSON object. Nothing was changed.`,
+    };
   return { ok: true, data: data as Record<string, unknown>, raw };
 }
 
@@ -65,7 +92,8 @@ export function installStatusLine(
     return {
       ok: false,
       reason: "foreign-statusline",
-      message: "Claude Code already has a custom statusLine. Re-run with --force to replace it (a backup is kept, and `burnrate uninstall claude-code` restores it).",
+      message:
+        "Claude Code already has a custom statusLine. Re-run with --force to replace it (a backup is kept, and `burnrate uninstall claude-code` restores it).",
       existing: previous,
     };
   }
@@ -99,7 +127,11 @@ export function uninstallStatusLine(settingsPath: string, record?: InstallRecord
   const current = read.data.statusLine;
   if (current === undefined) return { ok: true, changed: false };
   if (!isOurs(current))
-    return { ok: false, reason: "foreign-statusline", message: "The current statusLine isn't BurnRate's, so it was left alone." };
+    return {
+      ok: false,
+      reason: "foreign-statusline",
+      message: "The current statusLine isn't BurnRate's, so it was left alone.",
+    };
   const { statusLine: _drop, ...rest } = read.data;
   const restored = record?.previousStatusLine;
   writeSettings(settingsPath, restored === undefined ? rest : { ...rest, statusLine: restored });

@@ -14,7 +14,8 @@ export function formatMoney(usd: number, currency: CurrencyConfig = USD): string
   const abs = Math.abs(v);
   const sign = v < 0 ? "-" : "";
   if (abs >= 100_000) return `${sign}${currency.symbol}${(abs / 1000).toFixed(0)}k`;
-  if (abs >= 1000) return `${sign}${currency.symbol}${abs.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+  if (abs >= 1000)
+    return `${sign}${currency.symbol}${abs.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
   if (abs > 0 && abs < 0.01) return `${sign}${currency.symbol}<0.01`;
   return `${sign}${currency.symbol}${abs.toFixed(2)}`;
 }

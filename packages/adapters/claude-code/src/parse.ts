@@ -29,7 +29,8 @@ export function parseTranscriptLine(line: string, ctx: ParseContext = {}): Usage
   const model = str(message.model);
   const timestamp = str(row.timestamp);
   // "<synthetic>" marks locally generated messages (e.g. errors) that never hit the API.
-  if (!model || model === "<synthetic>" || !timestamp || Number.isNaN(Date.parse(timestamp))) return undefined;
+  if (!model || model === "<synthetic>" || !timestamp || Number.isNaN(Date.parse(timestamp)))
+    return undefined;
 
   const inputTokens = num(usage.input_tokens);
   const outputTokens = num(usage.output_tokens);
@@ -47,7 +48,8 @@ export function parseTranscriptLine(line: string, ctx: ParseContext = {}): Usage
       cacheWrite1hTokens = w1h;
     }
   }
-  if (inputTokens + outputTokens + cacheReadTokens + cacheWriteTokens + cacheWrite1hTokens === 0) return undefined;
+  if (inputTokens + outputTokens + cacheReadTokens + cacheWriteTokens + cacheWrite1hTokens === 0)
+    return undefined;
 
   const messageId = str(message.id);
   const requestId = str(row.requestId);

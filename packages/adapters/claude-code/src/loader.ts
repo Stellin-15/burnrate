@@ -59,14 +59,25 @@ function parseAppended(file: TranscriptFile, entry: FileEntry): FileEntry {
     const e = parseTranscriptLine(line, { projectDir: file.projectDir });
     if (e) byId.set(e.id, mergeDuplicate(byId.get(e.id), e));
   }
-  return { size: file.size, mtimeMs: file.mtimeMs, offset: entry.offset + lastNl + 1, events: [...byId.values()] };
+  return {
+    size: file.size,
+    mtimeMs: file.mtimeMs,
+    offset: entry.offset + lastNl + 1,
+    events: [...byId.values()],
+  };
 }
 
 function readCache(path: string | undefined): CacheFile {
   if (!path) return { version: CACHE_VERSION, sinceMs: 0, files: {} };
   try {
     const c = JSON.parse(readFileSync(path, "utf8")) as CacheFile;
-    if (c.version === CACHE_VERSION && typeof c.sinceMs === "number" && c.files && typeof c.files === "object") return c;
+    if (
+      c.version === CACHE_VERSION &&
+      typeof c.sinceMs === "number" &&
+      c.files &&
+      typeof c.files === "object"
+    )
+      return c;
   } catch {
     // missing or corrupt cache: rebuild
   }

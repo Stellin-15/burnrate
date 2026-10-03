@@ -89,7 +89,10 @@ export function groupKey(e: UsageEvent, by: GroupBy): string {
 }
 
 /** Group events and total each group. Time groups sort ascending; others sort by cost, highest first. */
-export function groupEvents(events: Iterable<UsageEvent>, by: GroupBy): Array<{ key: string; totals: UsageTotals }> {
+export function groupEvents(
+  events: Iterable<UsageEvent>,
+  by: GroupBy,
+): Array<{ key: string; totals: UsageTotals }> {
   const groups = new Map<string, UsageTotals>();
   for (const e of events) {
     const key = groupKey(e, by);
@@ -100,6 +103,8 @@ export function groupEvents(events: Iterable<UsageEvent>, by: GroupBy): Array<{ 
   const rows = [...groups].map(([key, totals]) => ({ key, totals }));
   const timeBased = by === "day" || by === "week" || by === "month";
   return rows.sort((a, b) =>
-    timeBased ? a.key.localeCompare(b.key) : b.totals.costUsd - a.totals.costUsd || b.totals.totalTokens - a.totals.totalTokens,
+    timeBased
+      ? a.key.localeCompare(b.key)
+      : b.totals.costUsd - a.totals.costUsd || b.totals.totalTokens - a.totals.totalTokens,
   );
 }

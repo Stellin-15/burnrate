@@ -18,7 +18,13 @@ const cases: Case[] = [
   [
     // 10k*3 + 2k*15 + 50k*0.3 + 5k*3.75, all / 1M = 0.03 + 0.03 + 0.015 + 0.01875
     "Sonnet 4.5 mixed request",
-    { model: "claude-sonnet-4-5-20250929", inputTokens: 10_000, outputTokens: 2_000, cacheReadTokens: 50_000, cacheWriteTokens: 5_000 },
+    {
+      model: "claude-sonnet-4-5-20250929",
+      inputTokens: 10_000,
+      outputTokens: 2_000,
+      cacheReadTokens: 50_000,
+      cacheWriteTokens: 5_000,
+    },
     0.09375,
   ],
   [
@@ -29,8 +35,16 @@ const cases: Case[] = [
   ],
   ["Opus 5.5 fast input", { model: "claude-opus-5-5", inputTokens: M, speed: "fast" }, 8],
   ["Opus 5.5 fast output", { model: "claude-opus-5-5", outputTokens: M, speed: "fast" }, 40],
-  ["Opus 5.5 fast cache read scales with input", { model: "claude-opus-5-5", cacheReadTokens: M, speed: "fast" }, 0.4],
-  ["fast flag ignored on models without fast pricing", { model: "claude-haiku-4-5", inputTokens: M, speed: "fast" }, 1],
+  [
+    "Opus 5.5 fast cache read scales with input",
+    { model: "claude-opus-5-5", cacheReadTokens: M, speed: "fast" },
+    0.4,
+  ],
+  [
+    "fast flag ignored on models without fast pricing",
+    { model: "claude-haiku-4-5", inputTokens: M, speed: "fast" },
+    1,
+  ],
   ["zero tokens", { model: "claude-opus-5-5" }, 0],
 ];
 
@@ -48,7 +62,13 @@ describe("eventCost", () => {
 describe("totalTokens", () => {
   it("adds every token category", () => {
     expect(
-      totalTokens({ inputTokens: 1, outputTokens: 2, cacheReadTokens: 3, cacheWriteTokens: 4, cacheWrite1hTokens: 5 }),
+      totalTokens({
+        inputTokens: 1,
+        outputTokens: 2,
+        cacheReadTokens: 3,
+        cacheWriteTokens: 4,
+        cacheWrite1hTokens: 5,
+      }),
     ).toBe(15);
   });
 });

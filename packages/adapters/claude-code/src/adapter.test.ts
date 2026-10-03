@@ -56,9 +56,18 @@ describe("parseTranscriptLine", () => {
     ["truncated json", '{"type":"assistant","message":{'],
     ["json array", "[1,2]"],
     ["no usage", '{"timestamp":"2026-10-01T00:00:00Z","message":{"id":"m","model":"claude-opus-5-5"}}'],
-    ["bad timestamp", '{"timestamp":"yesterday","message":{"id":"m","model":"claude-opus-5-5","usage":{"input_tokens":1}}}'],
-    ["synthetic", '{"timestamp":"2026-10-01T00:00:00Z","message":{"id":"m","model":"<synthetic>","usage":{"input_tokens":1}}}'],
-    ["all zero", '{"timestamp":"2026-10-01T00:00:00Z","message":{"id":"m","model":"claude-opus-5-5","usage":{"input_tokens":0}}}'],
+    [
+      "bad timestamp",
+      '{"timestamp":"yesterday","message":{"id":"m","model":"claude-opus-5-5","usage":{"input_tokens":1}}}',
+    ],
+    [
+      "synthetic",
+      '{"timestamp":"2026-10-01T00:00:00Z","message":{"id":"m","model":"<synthetic>","usage":{"input_tokens":1}}}',
+    ],
+    [
+      "all zero",
+      '{"timestamp":"2026-10-01T00:00:00Z","message":{"id":"m","model":"claude-opus-5-5","usage":{"input_tokens":0}}}',
+    ],
   ])("skips %s without throwing", (_name, line) => {
     expect(parseTranscriptLine(line)).toBeUndefined();
   });
@@ -137,7 +146,9 @@ describe("loadClaudeCodeEvents", () => {
     const cachePath = join(root, "cache.json");
     loadClaudeCodeEvents({ dirs: [root], cachePath });
     writeFileSync(join(root, "projects", "p", "a.jsonl"), readFixture("transcript-crlf.jsonl"));
-    expect(loadClaudeCodeEvents({ dirs: [root], cachePath }).map((e) => e.model)).toEqual(["claude-haiku-4-5-20251001"]);
+    expect(loadClaudeCodeEvents({ dirs: [root], cachePath }).map((e) => e.model)).toEqual([
+      "claude-haiku-4-5-20251001",
+    ]);
   });
 
   it("survives a corrupt cache file", () => {

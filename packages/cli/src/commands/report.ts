@@ -14,7 +14,15 @@ import { claudeConfigDirs, loadClaudeCodeEvents } from "@burnrate/adapter-claude
 import { colorEnabled, paintAnsi, paintNone } from "../ansi.js";
 import { renderTable, toCsv } from "../table.js";
 
-export const REPORT_VIEWS = ["daily", "weekly", "monthly", "models", "projects", "sessions", "blocks"] as const;
+export const REPORT_VIEWS = [
+  "daily",
+  "weekly",
+  "monthly",
+  "models",
+  "projects",
+  "sessions",
+  "blocks",
+] as const;
 export type ReportView = (typeof REPORT_VIEWS)[number];
 
 const GROUP: Record<Exclude<ReportView, "blocks">, GroupBy> = {
@@ -56,10 +64,15 @@ function defaultSince(view: ReportView, now: Date): Date {
   return new Date(now.getTime() - days * 86_400_000);
 }
 
-export function filterEvents(events: UsageEvent[], args: Pick<ReportArgs, "until" | "project" | "model">): UsageEvent[] {
+export function filterEvents(
+  events: UsageEvent[],
+  args: Pick<ReportArgs, "until" | "project" | "model">,
+): UsageEvent[] {
   const until = args.until ? parseDateArg(args.until) : undefined;
   // --until is inclusive of that whole day.
-  const untilMs = until ? until.getTime() + (/^\d{4}-\d{2}-\d{2}$/.test(args.until!) ? 86_400_000 : 0) : Infinity;
+  const untilMs = until
+    ? until.getTime() + (/^\d{4}-\d{2}-\d{2}$/.test(args.until!) ? 86_400_000 : 0)
+    : Infinity;
   const proj = args.project?.toLowerCase();
   const model = args.model?.toLowerCase();
   return events.filter(
@@ -103,14 +116,26 @@ export function buildReport(events: UsageEvent[], view: ReportView, now = new Da
       rows: blocks.map((b) => ({
         key: b.start.toISOString(),
         label: b.start.toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" }),
-        extra: [now < b.end ? "active" : `${Math.round((b.lastActivity.getTime() - b.firstActivity.getTime()) / 60_000)}m`],
+        extra: [
+          now < b.end
+            ? "active"
+            : `${Math.round((b.lastActivity.getTime() - b.firstActivity.getTime()) / 60_000)}m`,
+        ],
         totals: b.totals,
       })),
       totals,
     };
   }
   const by = GROUP[view];
-  const header = { day: "Date", week: "Week of", month: "Month", model: "Model", project: "Project", session: "Session", tool: "Tool" }[by];
+  const header = {
+    day: "Date",
+    week: "Week of",
+    month: "Month",
+    model: "Model",
+    project: "Project",
+    session: "Session",
+    tool: "Tool",
+  }[by];
   return {
     headers: [header, ...TOKEN_HEADERS],
     rows: groupEvents(events, by).map((r) => ({
@@ -138,14 +163,21 @@ export async function runReport(args: ReportArgs): Promise<number> {
 
   const dirs = claudeConfigDirs(config.claudeDirs);
   if (!dirs.length) {
-    console.error("No Claude Code data found. Looked for ~/.claude/projects (and CLAUDE_CONFIG_DIR). Run `burnrate doctor` for details.");
+    console.error(
+      "No Claude Code data found. Looked for ~/.claude/projects (and CLAUDE_CONFIG_DIR). Run `burnrate doctor` for details.",
+    );
     return 1;
   }
   const events = filterEvents(loadClaudeCodeEvents({ dirs, since }), args);
   const report = buildReport(events, args.view, now);
   // --limit keeps the most recent rows for time views and the top rows (by cost) otherwise.
-  const timeView = args.view === "daily" || args.view === "weekly" || args.view === "monthly" || args.view === "blocks";
-  const rows = !args.limit ? report.rows : timeView ? report.rows.slice(-args.limit) : report.rows.slice(0, args.limit);
+  const timeView =
+    args.view === "daily" || args.view === "weekly" || args.view === "monthly" || args.view === "blocks";
+  const rows = !args.limit
+    ? report.rows
+    : timeView
+      ? report.rows.slice(-args.limit)
+      : report.rows.slice(0, args.limit);
 
   if (args.format === "json") {
     console.log(
@@ -164,8 +196,22 @@ export async function runReport(args: ReportArgs): Promise<number> {
     return 0;
   }
   if (args.format === "csv") {
-    const headers = [report.headers[0]!, ...(args.view === "blocks" ? ["Status"] : []), "Requests", "Input", "Output", "CacheRead", "CacheWrite", "CostUSD"];
-    console.log(toCsv(headers, rows.map((r) => [r.key, ...(r.extra ?? []), ...rawCells(r.totals)])));
+    const headers = [
+      report.headers[0]!,
+      ...(args.view === "blocks" ? ["Status"] : []),
+      "Requests",
+      "Input",
+      "Output",
+      "CacheRead",
+      "CacheWrite",
+      "CostUSD",
+    ];
+    console.log(
+      toCsv(
+        headers,
+        rows.map((r) => [r.key, ...(r.extra ?? []), ...rawCells(r.totals)]),
+      ),
+    );
     return 0;
   }
 

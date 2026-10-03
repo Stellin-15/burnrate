@@ -8,7 +8,10 @@ import { join, resolve } from "node:path";
  */
 export function claudeConfigDirs(extra: string[] = [], env = process.env): string[] {
   const candidates = [
-    ...(env.CLAUDE_CONFIG_DIR ?? "").split(",").map((s) => s.trim()).filter(Boolean),
+    ...(env.CLAUDE_CONFIG_DIR ?? "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean),
     join(homedir(), ".claude"),
     join(env.XDG_CONFIG_HOME || join(homedir(), ".config"), "claude"),
     ...extra,
