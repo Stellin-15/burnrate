@@ -6,7 +6,7 @@ import { DEFAULT_CONFIG, type BurnrateConfig, type UsageEvent } from "@burnrate/
 import { parseStatuslineInput } from "@burnrate/adapter-claude-code";
 import { installStatusLine, uninstallStatusLine, type StatusLineSetting } from "./claude-settings.js";
 import { buildStatusModel, demoModel, modelLabel } from "./commands/statusline.js";
-import { buildReport, filterEvents, parseDateArg, projectName } from "./commands/report.js";
+import { buildReport, filterEvents, mergeTotals, parseDateArg, projectName } from "./commands/report.js";
 import { renderStatusLine } from "./render.js";
 import { computeSummary, recordSample, type SampleState } from "./summary.js";
 import { renderTable, toCsv } from "./table.js";
@@ -269,5 +269,77 @@ describe("report helpers", () => {
       ).split("\n"),
     ).toEqual(["A    B", "──  ──", "x    1", "yy  22"]);
     expect(toCsv(["a"], [['he said "hi", ok']])).toBe('a\n"he said ""hi"", ok"');
+  });
+});
+
+describe("report polish", () => {
+  const base = {
+    tool: "t",
+    provider: "p",
+    inputTokens: 1_000_000,
+    outputTokens: 0,
+    source: "local-log" as const,
+  };
+  const events: UsageEvent[] = [
+    {
+      ...base,
+      id: "1",
+      timestamp: "2026-10-01T09:00:00Z",
+      model: "claude-haiku-4-5-20251001",
+      sessionId: "aaaaaaaa-1",
+      project: "/w/api",
+    },
+    {
+      ...base,
+      id: "2",
+      timestamp: "2026-10-01T10:00:00Z",
+      model: "claude-haiku-4-5",
+      sessionId: "aaaaaaaa-1",
+      project: "/w/api",
+    },
+    {
+      ...base,
+      id: "3",
+      timestamp: "2026-10-02T10:00:00Z",
+      model: "claude-opus-5-5",
+      sessionId: "bbbbbbbb-2",
+      project: "/w/web",
+    },
+  ];
+
+  it("merges dated and undated ids of the same model into one row", () => {
+    const r = buildReport(events, "models");
+    expect(r.rows.map((x) => [x.key, x.totals.requests])).toEqual([
+      ["claude-opus-5-5", 1],
+      ["claude-haiku-4-5", 2],
+    ]);
+  });
+
+  it("shows when each session started and in which project", () => {
+    const r = buildReport(events, "sessions");
+    expect(r.extraHeaders).toEqual(["Started", "Project"]);
+    const api = r.rows.find((x) => x.key === "aaaaaaaa-1")!;
+    expect(api.extra?.[1]).toBe("api");
+    expect(api.extra?.[0]).not.toBe("");
+  });
+
+  it("sums hidden rows so a limited table still adds up", () => {
+    const r = buildReport(events, "sessions");
+    const rest = mergeTotals(r.rows.slice(1).map((x) => x.totals));
+    expect(r.rows[0]!.totals.requests + rest.requests).toBe(r.totals.requests);
+    expect(r.rows[0]!.totals.costUsd + rest.costUsd).toBeCloseTo(r.totals.costUsd, 10);
+  });
+
+  it("left-aligns label columns", () => {
+    const out = renderTable(
+      ["A", "Project", "N"],
+      [
+        ["x", "api", "1"],
+        ["yy", "website", "22"],
+      ],
+      undefined,
+      2,
+    );
+    expect(out.split("\n")[2]).toBe("x   api       1");
   });
 });
