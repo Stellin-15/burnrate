@@ -1,0 +1,37 @@
+{
+  "hook_event_name": "Status",
+  "session_id": "sess-1111",
+  "transcript_path": "/home/dev/.claude/projects/-home-dev-acme-api/sess-1111.jsonl",
+  "cwd": "/home/dev/acme-api",
+  "model": { "id": "claude-opus-5-5", "display_name": "Opus" },
+  "workspace": { "current_dir": "/home/dev/acme-api", "project_dir": "/home/dev/acme-api", "added_dirs": [] },
+  "version": "2.1.300",
+  "output_style": { "name": "default" },
+  "cost": {
+    "total_cost_usd": 1.2345,
+    "total_duration_ms": 2700000,
+    "total_api_duration_ms": 300000,
+    "total_lines_added": 156,
+    "total_lines_removed": 23
+  },
+  "context_window": {
+    "total_input_tokens": 62000,
+    "total_output_tokens": 1200,
+    "context_window_size": 200000,
+    "used_percentage": 31,
+    "remaining_percentage": 69,
+    "current_usage": {
+      "input_tokens": 500,
+      "output_tokens": 1200,
+      "cache_creation_input_tokens": 1500,
+      "cache_read_input_tokens": 60000
+    }
+  },
+  "exceeds_200k_tokens": false,
+  "fast_mode": false,
+  "prompt_cache": { "warm": true, "hit_ratio": 0.91 },
+  "rate_limits": {
+    "five_hour": { "used_percentage": 72.4, "resets_at": 1790859600 },
+    "seven_day": { "used_percentage": 41.2, "resets_at": 1791302400 }
+  }
+}

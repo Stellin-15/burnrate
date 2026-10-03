@@ -1,0 +1,42 @@
+[
+  {
+    "id": "claude-code:msg_01:req_A",
+    "timestamp": "2026-10-01T09:42:18.400Z",
+    "tool": "claude-code",
+    "provider": "anthropic",
+    "model": "claude-sonnet-4-5-20250929",
+    "inputTokens": 12,
+    "outputTokens": 480,
+    "source": "local-log",
+    "project": "/home/dev/acme-api",
+    "sessionId": "sess-1111",
+    "cacheWrite1hTokens": 20000
+  },
+  {
+    "id": "claude-code:msg_02:req_B",
+    "timestamp": "2026-10-01T10:05:00.000Z",
+    "tool": "claude-code",
+    "provider": "anthropic",
+    "model": "claude-opus-5-5",
+    "inputTokens": 300,
+    "outputTokens": 2000,
+    "source": "local-log",
+    "project": "/home/dev/acme-api",
+    "sessionId": "sess-1111",
+    "cacheReadTokens": 50000,
+    "cacheWriteTokens": 1000
+  },
+  {
+    "id": "claude-code:msg_03:req_C",
+    "timestamp": "2026-10-01T10:30:00.000Z",
+    "tool": "claude-code",
+    "provider": "anthropic",
+    "model": "claude-opus-5-5",
+    "inputTokens": 1000,
+    "outputTokens": 1000,
+    "source": "local-log",
+    "project": "/home/dev/acme-api",
+    "sessionId": "sess-1111",
+    "speed": "fast"
+  }
+]
