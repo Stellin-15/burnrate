@@ -105,6 +105,8 @@ This opens a page in your browser, served from your own machine:
 
 ![BurnRate dashboard: total spend, budget meters, and daily spend by model](docs/images/dashboard.png)
 
+- **Plan limits:** your real 5-hour and weekly Claude limits, from the last time Claude Code updated the status line.
+- **API spend:** what your Anthropic or OpenAI organization was billed, next to list price (see [API spend](#api-spend-anthropic-and-openai-organizations)). While the dashboard is open it refreshes this every 15 minutes, but only for providers you've added a key for.
 - **Usage:** total spend for the period, budget meters, what caching saved you, daily spend by model (with a table view), line items by model and project, and your most expensive sessions. Filter by 7 days, 30 days, 90 days, or all time, and by project or model. It refreshes every 30 seconds.
 - **Cost calculator:** describe a workload, or start from your own average request, and see what it costs per request, day, and month on every model. **"What if"** re-prices your actual history on another model.
 - **Export:** CSV for daily spend, models, projects, sessions, or every request; JSON for every request.
@@ -201,14 +203,14 @@ Every option, with examples (custom limits, other currencies, extra data dirs), 
 
 ## Roadmap
 
-| Phase | Status | Scope                                                                                         |
-| ----- | ------ | --------------------------------------------------------------------------------------------- |
-| 0     | ✅     | Monorepo, CI on macOS/Linux/Windows, tooling                                                  |
-| 1     | ✅     | Pricing table, cost engine, Claude Code adapter, status line meter, reports, `init`           |
-| 2     | ✅     | Local web dashboard (`burnrate dashboard`), budgets, and a multi-model "what if" calculator   |
-| 3     | next   | API-key spend tracking (Anthropic, OpenAI, Google usage APIs), keys stored in the OS keychain |
-| 4     |        | Codex CLI, Gemini CLI, OpenCode, and Aider adapters; desktop overlay; browser extension       |
-| 5     |        | Theme packs, layout editor, docs site, Homebrew/winget/scoop                                  |
+| Phase | Status | Scope                                                                                        |
+| ----- | ------ | -------------------------------------------------------------------------------------------- |
+| 0     | ✅     | Monorepo, CI on macOS/Linux/Windows, tooling                                                 |
+| 1     | ✅     | Pricing table, cost engine, Claude Code adapter, status line meter, reports, `init`          |
+| 2     | ✅     | Local web dashboard (`burnrate dashboard`), budgets, and a multi-model "what if" calculator  |
+| 3     | ✅     | Usage history (SQLite), Anthropic and OpenAI billed spend, keys in the OS keychain           |
+| 4     | next   | VS Code status bar meter; Codex CLI, Gemini CLI, OpenCode, Aider; desktop overlay; extension |
+| 5     |        | Theme packs, layout editor, docs site, Homebrew/winget/scoop                                 |
 
 The full plan is in [PROJECT_PLAN.md](PROJECT_PLAN.md).
 

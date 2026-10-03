@@ -9,7 +9,25 @@ Alternate names if taken: `tokenmeter`, `spendline`, `gaugecode`, `limitlight`
 
 ## 0. Status and decisions (updated 2026-10-03)
 
-**Phases 0, 1 and 2 are built.** `burnrate init claude-code` adds a live meter to Claude Code, `burnrate report` gives cost tables, and `burnrate dashboard` serves a local web dashboard with budgets, a model cost calculator, "what if" re-pricing, and CSV/JSON export. 141 unit tests and 7 browser end-to-end tests pass, along with lint, format, typecheck, and pricing validation. How to use it: [README.md](README.md). What external formats it relies on: [docs/research.md](docs/research.md).
+**Phases 0–3 are built.** `burnrate init claude-code` adds a live meter to Claude Code, `burnrate report` gives cost tables, `burnrate dashboard` serves a local web dashboard (budgets, cost calculator, plan limits, API spend), and `burnrate keys` / `sync` / `spend` track what Anthropic and OpenAI organizations are billed. 181 unit tests and 9 browser end-to-end tests pass, along with lint, format, typecheck, and pricing validation, on macOS, Linux, and Windows. How to use it: [README.md](README.md). What external formats it relies on: [docs/research.md](docs/research.md).
+
+Tested on real data (2026-10-03): `doctor` and `report` parsed 1,750 real requests with every model priced. Per-model costs match a hand recomputation from published rates, including the 1-hour cache-write split. The live meter shows real 5h/7d limits.
+
+### Phase 3 notes
+
+- **Decisions (approved 2026-10-03):** built-in `node:sqlite` for history (minimum Node is now 22.13), `@napi-rs/keyring` for keys (prebuilt, optional, lazy-loaded), Anthropic and OpenAI first (Google deferred: no simple usage API), network access opt-in only.
+- **History:** `~/.burnrate/burnrate.db` archives Claude Code usage whenever `report`, `dashboard`, or `doctor` runs, so reports outlive Claude Code's 30-day transcript cleanup. The status line never opens the database.
+- **Done-when check:** `burnrate keys add <provider>` verifies the key with a real sync before saving it and backfills 30 days.
+- **Reconciliation:** `burnrate spend` and the dashboard's API spend tab compare billed cost with list price for the same tokens. OpenAI rows show "unpriced" until OpenAI prices are added to `models.json`.
+- **Not verified against real provider APIs** (no organization Admin key was available). The clients follow the official docs and OpenAPI spec and are tested against responses in those documented shapes. First real use: run `burnrate keys add anthropic` and compare `burnrate spend` with the Console's Cost page.
+
+### VS Code (requested 2026-10-03)
+
+The Claude Code VS Code extension's chat panel doesn't display custom status lines. Observed: with the meter installed, ten minutes of activity in the chat panel triggered no status line runs. (Caveat: that conversation started before the install.) Plan:
+
+1. **Groundwork, done:** every status line run saves the real limits and recent session IDs to `~/.burnrate/state/last-status.json`, and the dashboard already shows them.
+2. **Confirm** whether a _new_ chat-panel conversation runs the status line command. If it does, the panel feeds real limits too; if not, limits update whenever any terminal Claude Code session runs.
+3. **Build a small VS Code extension** (`apps/vscode`): a status bar item showing the same meter (5h/7d from the snapshot, today's cost from the local summary), a tooltip with details, and a click that opens `burnrate dashboard`. It reads local files only, with no network access.
 
 ### Phase 2 notes
 
