@@ -65,3 +65,4 @@ export {
   type BudgetStatus,
   type Budgets,
 } from "./budgets.js";
+export { computedCost, reconcile, type ReconcileRow } from "./reconcile.js";
