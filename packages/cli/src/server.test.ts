@@ -53,6 +53,8 @@ beforeAll(async () => {
 });
 afterAll(() => new Promise<void>((r) => server.close(() => r())));
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- test responses are checked field by field
+const getJson = async (path: string): Promise<any> => (await api(path)).json();
 const api = (path: string, token = TOKEN) =>
   fetch(base + path, { headers: { authorization: `Bearer ${token}` } });
 
@@ -115,7 +117,7 @@ describe("static files", () => {
 
 describe("/api/usage", () => {
   it("totals, merges model spellings, and fills empty days", async () => {
-    const u = await (await api("/api/usage?from=2026-10-01T00:00:00Z")).json();
+    const u = await getJson("/api/usage?from=2026-10-01T00:00:00Z");
     expect(u.totals.costUsd).toBeCloseTo(6, 6); // $1 + $1 + $4, mystery unpriced
     expect(u.totals.unpricedRequests).toBe(1);
     expect(u.unpricedModels).toEqual(["mystery-model"]);
@@ -130,21 +132,21 @@ describe("/api/usage", () => {
   });
 
   it("filters by project and model", async () => {
-    const byProject = await (await api(`/api/usage?project=${encodeURIComponent("/work/api")}`)).json();
+    const byProject = await getJson(`/api/usage?project=${encodeURIComponent("/work/api")}`);
     expect(byProject.totals.requests).toBe(1);
-    const byModel = await (await api("/api/usage?model=claude-haiku-4-5")).json();
+    const byModel = await getJson("/api/usage?model=claude-haiku-4-5");
     expect(byModel.totals.requests).toBe(2);
   });
 
   it("reports budget status against all usage", async () => {
-    const u = await (await api("/api/usage?from=2026-10-03T00:00:00Z")).json();
+    const u = await getJson("/api/usage?from=2026-10-03T00:00:00Z");
     expect(u.budgets[0]).toMatchObject({ period: "monthly", limitUsd: 10, spentUsd: 6 });
   });
 });
 
 describe("/api/whatif", () => {
   it("re-prices history on another model", async () => {
-    const r = await (await api("/api/whatif?target=claude-sonnet-5-5")).json();
+    const r = await getJson("/api/whatif?target=claude-sonnet-5-5");
     expect(r.actualUsd).toBeCloseTo(6, 6);
     expect(r.repricedUsd).toBeCloseTo(6, 6); // 3M input tokens * $2
     expect((await api("/api/whatif?target=nope")).status).toBe(404);
@@ -164,11 +166,19 @@ describe("/api/export", () => {
   });
 
   it("downloads raw events as JSON", async () => {
-    const data = await (await api("/api/export?view=events&format=json")).json();
+    const data = await getJson("/api/export?view=events&format=json");
     expect(data).toHaveLength(4);
   });
 
   it("rejects unknown views", async () => {
     expect((await api("/api/export?view=secrets")).status).toBe(400);
+  });
+});
+
+describe("/api/usage details", () => {
+  it("labels sessions by project and start time, and reports cache savings", async () => {
+    const u = await getJson("/api/usage");
+    expect(u.sessions[0]).toMatchObject({ label: "web", startedAt: "2026-10-01T10:00:00Z" });
+    expect(u.cacheSavingsUsd).toBe(0); // no cache reads in these events
   });
 });
