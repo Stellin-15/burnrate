@@ -16,6 +16,7 @@ import {
   type StatuslineInput,
 } from "@burnrate/adapter-claude-code";
 import { colorEnabled } from "../ansi.js";
+import { recordSnapshot } from "../snapshot.js";
 import { renderStatusLine, type StatusModel } from "../render.js";
 import {
   computeSummary,
@@ -213,6 +214,7 @@ export async function runStatusline(args: { demo?: boolean; theme?: string }): P
       now,
     });
     process.stdout.write(line + "\n");
+    recordSnapshot(join(home, "state", "last-status.json"), input, now);
   } catch (err) {
     // Never break the user's status line: show what we can and log the rest.
     logError(home, err);
