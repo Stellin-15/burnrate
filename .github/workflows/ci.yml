@@ -53,3 +53,24 @@ jobs:
           node packages/cli/dist/cli.js --version
           node packages/cli/dist/cli.js statusline --demo --theme plain
           node packages/cli/dist/cli.js statusline < packages/adapters/claude-code/fixtures/statusline-pro.json
+
+  e2e:
+    name: Dashboard end-to-end
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      # Uses the Chrome that GitHub's Ubuntu image already has; no browser download.
+      - run: pnpm e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-results
+          path: apps/dashboard/test-results
+          retention-days: 7
