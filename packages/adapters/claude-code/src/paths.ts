@@ -4,18 +4,19 @@ import { join, resolve } from "node:path";
 
 /**
  * Claude Code config directories that contain a `projects/` folder.
- * Order: CLAUDE_CONFIG_DIR (comma-separated allowed), ~/.claude, ~/.config/claude, then `extra`.
+ * Like Claude Code itself, a set CLAUDE_CONFIG_DIR (comma-separated allowed) replaces the defaults
+ * (~/.claude, ~/.config/claude) instead of adding to them. `extra` dirs are always included.
  */
 export function claudeConfigDirs(extra: string[] = [], env = process.env): string[] {
-  const candidates = [
-    ...(env.CLAUDE_CONFIG_DIR ?? "")
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean),
+  const fromEnv = (env.CLAUDE_CONFIG_DIR ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const defaults = [
     join(homedir(), ".claude"),
     join(env.XDG_CONFIG_HOME || join(homedir(), ".config"), "claude"),
-    ...extra,
   ];
+  const candidates = [...(fromEnv.length ? fromEnv : defaults), ...extra];
   const seen = new Set<string>();
   const dirs: string[] = [];
   for (const c of candidates) {

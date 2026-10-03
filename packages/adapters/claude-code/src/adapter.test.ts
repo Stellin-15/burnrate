@@ -104,8 +104,8 @@ describe("listTranscriptFiles / claudeConfigDirs", () => {
     const root = fakeClaudeDir({ "p/s.jsonl": "transcript-crlf.jsonl" });
     const empty = mkdtempSync(join(tmpdir(), "burnrate-empty-"));
     const dirs = claudeConfigDirs([], { CLAUDE_CONFIG_DIR: `${root},${empty}`, XDG_CONFIG_HOME: empty });
-    expect(dirs[0]).toBe(root);
-    expect(dirs).not.toContain(empty);
+    // Only the configured dir: ~/.claude must not be mixed in (matches Claude Code).
+    expect(dirs).toEqual([root]);
   });
 });
 
