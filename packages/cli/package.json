@@ -29,8 +29,13 @@
   "devDependencies": {
     "@burnrate/adapter-claude-code": "workspace:*",
     "@burnrate/core": "workspace:*",
-    "@burnrate/pricing": "workspace:*",
     "@burnrate/dashboard": "workspace:*",
-    "@burnrate/store": "workspace:*"
+    "@burnrate/pricing": "workspace:*",
+    "@burnrate/store": "workspace:*",
+    "@burnrate/adapter-anthropic-api": "workspace:*",
+    "@burnrate/adapter-openai-api": "workspace:*"
+  },
+  "optionalDependencies": {
+    "@napi-rs/keyring": "^2.1.0"
   }
 }
