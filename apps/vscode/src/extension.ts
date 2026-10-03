@@ -5,11 +5,50 @@ import * as vscode from "vscode";
 import { burnrateHome, loadConfig } from "@burnrate/core";
 import type { StatusSnapshot } from "../../../packages/cli/src/snapshot.js";
 import { getLocalSummary, readJson } from "../../../packages/cli/src/summary.js";
-import { buildView, dashboardLaunch } from "./view.js";
+import { buildView, dashboardLaunch, type StatusView } from "./view.js";
 
 let item: vscode.StatusBarItem | undefined;
 let timer: NodeJS.Timeout | undefined;
 let watcher: FSWatcher | undefined;
+
+/**
+ * The BurnRate section inside Claude Code's own sidebar (next to the chat). Extensions can't draw inside
+ * another extension's chat view, but they can add a view to its container, which is the closest place.
+ */
+const SIDEBAR_VIEWS = ["burnrate.claudeSidebarSecondary", "burnrate.claudeSidebar"] as const;
+
+class MeterTree implements vscode.TreeDataProvider<StatusView["rows"][number]> {
+  private readonly changed = new vscode.EventEmitter<void>();
+  readonly onDidChangeTreeData = this.changed.event;
+  rows: StatusView["rows"] = [];
+  update(rows: StatusView["rows"]) {
+    this.rows = rows;
+    this.changed.fire();
+  }
+  getChildren() {
+    return this.rows;
+  }
+  getTreeItem(r: StatusView["rows"][number]): vscode.TreeItem {
+    const t = new vscode.TreeItem(r.label);
+    t.description = r.value;
+    t.tooltip = `${r.label}: ${r.value}`;
+    const color =
+      r.level === "error" ? "charts.red" : r.level === "warning" ? "charts.yellow" : "charts.green";
+    const isLimit = r.id === "fiveHour" || r.id === "sevenDay" || r.id === "spendLimit";
+    t.iconPath = new vscode.ThemeIcon(
+      isLimit ? "circle-filled" : "graph",
+      isLimit ? new vscode.ThemeColor(color) : undefined,
+    );
+    t.command = { command: "burnrate.openDashboard", title: "Open BurnRate dashboard" };
+    return t;
+  }
+  dispose() {
+    this.changed.dispose();
+  }
+}
+
+const tree = new MeterTree();
+const treeViews: vscode.TreeView<StatusView["rows"][number]>[] = [];
 
 function settings() {
   const c = vscode.workspace.getConfiguration("burnrate");
@@ -33,6 +72,12 @@ function refresh(): void {
     const md = new vscode.MarkdownString(view.tooltip);
     md.isTrusted = { enabledCommands: ["burnrate.openDashboard", "burnrate.refresh"] };
     item.tooltip = md;
+    for (const v of treeViews) {
+      // The header line shows the meter even while the section is collapsed.
+      v.description = view.headline;
+      v.message = view.hint;
+    }
+    tree.update(view.rows);
     item.backgroundColor =
       view.level === "error"
         ? new vscode.ThemeColor("statusBarItem.errorBackground")
@@ -114,7 +159,16 @@ export function activate(context: vscode.ExtensionContext): void {
   item.text = "$(pulse) BurnRate";
   item.show();
 
+  for (const id of SIDEBAR_VIEWS) {
+    const v = vscode.window.createTreeView(id, { treeDataProvider: tree });
+    // Re-read as soon as the section is shown, so it is never stale when you open it.
+    v.onDidChangeVisibility((e) => e.visible && refresh());
+    treeViews.push(v);
+  }
+
   context.subscriptions.push(
+    tree,
+    ...treeViews,
     item,
     vscode.commands.registerCommand("burnrate.refresh", refresh),
     vscode.commands.registerCommand("burnrate.openDashboard", openDashboard),

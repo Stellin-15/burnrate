@@ -2,7 +2,7 @@
   "name": "burnrate-vscode",
   "displayName": "BurnRate",
   "description": "Your Claude Code usage limits and today's cost in the VS Code status bar. Local-only.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "burnrate",
   "license": "MIT",
   "private": true,
@@ -33,12 +33,14 @@
       {
         "command": "burnrate.openDashboard",
         "title": "Open Dashboard",
-        "category": "BurnRate"
+        "category": "BurnRate",
+        "icon": "$(graph)"
       },
       {
         "command": "burnrate.refresh",
         "title": "Refresh",
-        "category": "BurnRate"
+        "category": "BurnRate",
+        "icon": "$(refresh)"
       }
     ],
     "configuration": {
@@ -61,6 +63,42 @@
           "description": "Command that starts the dashboard, e.g. \"burnrate dashboard\". Leave empty to use the BurnRate install that `burnrate init claude-code` set up."
         }
       }
+    },
+    "views": {
+      "claude-sidebar-secondary": [
+        {
+          "id": "burnrate.claudeSidebarSecondary",
+          "name": "BurnRate",
+          "type": "tree",
+          "when": "!claude-code:doesNotSupportSecondarySidebar",
+          "visibility": "visible",
+          "initialSize": 1
+        }
+      ],
+      "claude-sidebar": [
+        {
+          "id": "burnrate.claudeSidebar",
+          "name": "BurnRate",
+          "type": "tree",
+          "when": "claude-code:doesNotSupportSecondarySidebar",
+          "visibility": "visible",
+          "initialSize": 1
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "burnrate.refresh",
+          "when": "view =~ /^burnrate./",
+          "group": "navigation"
+        },
+        {
+          "command": "burnrate.openDashboard",
+          "when": "view =~ /^burnrate./",
+          "group": "navigation"
+        }
+      ]
     }
   },
   "scripts": {
