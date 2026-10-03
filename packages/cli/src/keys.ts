@@ -32,6 +32,9 @@ export interface Keychain {
  * Loaded lazily and optionally: if it can't load on this platform, keys must come from environment variables.
  */
 export async function osKeychain(): Promise<Keychain | { error: string }> {
+  // Tests and sandboxes can opt out so nothing ever reads real stored keys.
+  if (process.env.BURNRATE_KEYCHAIN === "off")
+    return { error: "the keychain is disabled (BURNRATE_KEYCHAIN=off)" };
   let mod: typeof import("@napi-rs/keyring");
   try {
     mod = await import("@napi-rs/keyring");

@@ -100,7 +100,8 @@ export async function runSpend(args: {
     if (r.differenceUsd === undefined) return r.unpricedRows ? "unpriced" : "";
     const pct = r.computedUsd ? (r.differenceUsd / r.computedUsd) * 100 : 0;
     const text = `${r.differenceUsd >= 0 ? "+" : "−"}${money(Math.abs(r.differenceUsd))} (${pct >= 0 ? "+" : "−"}${Math.abs(pct).toFixed(0)}%)`;
-    return Math.abs(pct) >= 5 ? paint("yellow", text) : text;
+    // Only flag being billed noticeably MORE than list price; less is a discount.
+    return r.differenceUsd > 0 && pct >= 5 ? paint("yellow", text) : text;
   };
   if (!rows.length) {
     console.log(`No billed usage since ${from.slice(0, 10)}.`);
