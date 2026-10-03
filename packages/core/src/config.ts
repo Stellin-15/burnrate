@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { USD, type CurrencyConfig } from "./format.js";
+import { BUDGET_PERIODS, type BudgetPeriod, type Budgets } from "./budgets.js";
 import type { WindowLimit } from "./windows.js";
 
 export const WIDGETS = [
@@ -35,6 +36,8 @@ export interface BurnrateConfig {
    * Values are estimates you choose; BurnRate does not know your plan's real limits.
    */
   limits: { fiveHour?: WindowLimit; sevenDay?: WindowLimit };
+  /** Spending caps in USD per calendar day, week (Monday start), and month. Shown in the dashboard. */
+  budgets: Budgets;
   currency: CurrencyConfig;
   /** How long a transcript scan stays fresh for the status line, in seconds. */
   cacheSeconds: number;
@@ -48,6 +51,7 @@ export const DEFAULT_CONFIG: BurnrateConfig = {
   thresholds: { warn: 60, danger: 85 },
   barWidth: 8,
   limits: {},
+  budgets: {},
   currency: USD,
   cacheSeconds: 20,
   claudeDirs: [],
@@ -151,6 +155,16 @@ export function resolveConfig(raw: unknown): { config: BurnrateConfig; warnings:
     if (Array.isArray(raw.claudeDirs) && raw.claudeDirs.every((d) => typeof d === "string"))
       c.claudeDirs = raw.claudeDirs;
     else warnings.push("claudeDirs must be an array of paths");
+  }
+  if (raw.budgets !== undefined) {
+    if (isObj(raw.budgets)) {
+      for (const [k, v] of Object.entries(raw.budgets)) {
+        if (!(BUDGET_PERIODS as readonly string[]).includes(k))
+          warnings.push(`budgets.${k} ignored. Valid: ${BUDGET_PERIODS.join(", ")}`);
+        else if (posNum(v)) c.budgets[k as BudgetPeriod] = v;
+        else warnings.push(`budgets.${k} must be a positive number of USD`);
+      }
+    } else warnings.push('budgets must be an object like {"monthly": 200}');
   }
   return { config: c, warnings };
 }
