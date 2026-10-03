@@ -159,7 +159,7 @@ Every option, with examples (custom limits, other currencies, extra data dirs), 
 
 - BurnRate makes **no network requests**. The dashboard's fonts and scripts are bundled; it talks only to the local `burnrate dashboard` process.
 - It reads Claude Code's transcripts under `~/.claude/projects` (or `CLAUDE_CONFIG_DIR`) and keeps only token counts, model ids, timestamps, and project paths. It never stores message content.
-- Its own files live in `~/.burnrate/` (override with `BURNRATE_HOME`): your config, a small cache, and an error log. Delete the folder at any time.
+- Its own files live in `~/.burnrate/` (override with `BURNRATE_HOME`): your config, a small cache, an error log, and `burnrate.db`, a history of the same token counts so reports reach back further than Claude Code keeps transcripts (30 days by default). Delete the folder at any time.
 - `init` touches exactly one key, `statusLine`, in Claude Code's settings, and saves a timestamped backup next to the file first.
 
 ## Troubleshooting

@@ -12,11 +12,11 @@ Invalid values never break the status line: each one falls back to its default, 
 
 ## Locations
 
-| What             | Default                         | Override                                                       |
-| ---------------- | ------------------------------- | -------------------------------------------------------------- |
-| Config file      | `~/.burnrate/config.json`       | `BURNRATE_CONFIG=/path/to/config.json`                         |
-| Cache, logs      | `~/.burnrate/`                  | `BURNRATE_HOME=/path`                                          |
-| Claude Code data | `~/.claude`, `~/.config/claude` | `CLAUDE_CONFIG_DIR` (comma-separated allowed), or `claudeDirs` |
+| What                                 | Default                         | Override                                                       |
+| ------------------------------------ | ------------------------------- | -------------------------------------------------------------- |
+| Config file                          | `~/.burnrate/config.json`       | `BURNRATE_CONFIG=/path/to/config.json`                         |
+| Cache, logs, history (`burnrate.db`) | `~/.burnrate/`                  | `BURNRATE_HOME=/path`                                          |
+| Claude Code data                     | `~/.claude`, `~/.config/claude` | `CLAUDE_CONFIG_DIR` (comma-separated allowed), or `claudeDirs` |
 
 ## Options
 

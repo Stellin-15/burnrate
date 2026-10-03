@@ -68,6 +68,12 @@ Source: https://platform.claude.com/docs/en/about-claude/pricing
 - Fast mode (Opus 5.5, Opus 5, Opus 4.8) replaces the input/output rates. Cache multipliers apply on top of the fast input rate.
 - Not modeled yet: Batch API (50% off), data residency `inference_geo: "us"` (1.1×), regional Bedrock/Vertex premiums, web search ($10 per 1k searches). Claude Code doesn't use batch, so the status line is unaffected.
 
+## Node built-in SQLite (`node:sqlite`)
+
+- Available without a flag from Node 22.13; still marked experimental and prints an `ExperimentalWarning` on first load. BurnRate suppresses only that one warning (`packages/store/src/sqlite.ts`).
+- API used: `DatabaseSync`, `prepare().run/get/all`, `exec`. Schema versions tracked with `PRAGMA user_version`; WAL mode plus `busy_timeout` because the dashboard, `report`, and `sync` may open the file at the same time.
+- The status line never opens the database, so its speed is unaffected.
+
 ## Not yet researched (later phases)
 
 - Anthropic Admin API usage and cost endpoints (Phase 3)
