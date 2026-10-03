@@ -7,6 +7,46 @@ Alternate names if taken: `tokenmeter`, `spendline`, `gaugecode`, `limitlight`
 
 ---
 
+## 0. Status and decisions (updated 2026-10-03)
+
+**Phase 0 and Phase 1 are built.** `burnrate init claude-code` adds a live meter to Claude Code, and `burnrate report` gives cost tables. 116 tests pass, along with lint, format, typecheck, and pricing validation. How to use it: [README.md](README.md). What external formats it relies on: [docs/research.md](docs/research.md).
+
+### What research changed
+
+- **Claude Code now reports real subscription limits.** The status line's stdin JSON includes `rate_limits.five_hour` and `rate_limits.seven_day` (`used_percentage`, `resets_at`) for Pro/Max subscribers, plus `rate_limits.spend_limit` behind an org gateway. The meter shows these **exact** numbers and uses local estimates only as a fallback (API-key users, before the first response, other tools). This reverses risk #1 in section 7 for Claude Code.
+- **Time-to-limit projection** comes from sampling the official percentage over the last hour (`~/.burnrate/state/ratelimit-samples.json`), not from guessing plan sizes.
+- **Pricing is not uniform:** cache-read multipliers differ by model (0.025×, 0.05×, 0.1×), there are separate 5-minute and 1-hour cache-write rates, and fast mode has its own rates. `models.json` stores every rate explicitly, and `UsageEvent` gained `cacheWrite1hTokens` and `speed`.
+- **Transcripts are deleted after `cleanupPeriodDays`** (default 30). Long-term history needs BurnRate to store events itself (the Phase 2 SQLite item).
+
+### Decisions made during the build
+
+| Decision                                                                                                                      | Why                                                                                                                                                                                                                                                                                              |
+| ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| No SQLite in Phase 1. A small incremental JSON cache (`~/.burnrate/cache/`) instead                                           | `better-sqlite3` needs native compilation, which section 10 says to ask about first. The JSON cache re-reads only appended bytes and is enough for the status line. **Open question for Phase 2:** approve `better-sqlite3`, or use Node's built-in `node:sqlite` (Node 22.5+, no native build)? |
+| No CLI framework (uses `node:util` `parseArgs`) and no Turborepo                                                              | Zero runtime dependencies; plain `pnpm -r` is enough at this size                                                                                                                                                                                                                                |
+| CLI bundled with tsup into `dist/`, published as **`burnrate-cli`** (binary still `burnrate`)                                 | `burnrate` is taken on npm. Bundling makes the published package self-contained                                                                                                                                                                                                                  |
+| `init` pins absolute `node` and script paths, with forward slashes                                                            | Claude Code may run with a different PATH, and runs commands through Git Bash on Windows; `npx` would add about 1s per refresh                                                                                                                                                                   |
+| `init` records the previous `statusLine` so `uninstall` restores it, and refuses to overwrite a foreign one without `--force` | Never silently destroy user config                                                                                                                                                                                                                                                               |
+| Status line always exits 0 and logs errors to `~/.burnrate/logs/`                                                             | A broken meter must not break Claude Code's UI                                                                                                                                                                                                                                                   |
+
+### Measured performance
+
+On Windows 11 with Node 22 and about 1 MB of transcripts, `burnrate statusline` takes **~280 ms wall-clock, of which ~235 ms is Node's own startup** (`node -e 0`). BurnRate's own work is ~45 ms when cached and ~70 ms when it rescans. The 50 ms target in section 7 holds for BurnRate's code but not end to end, because of Node startup. If that matters, the options are a Node single-executable build or a tiny native shim (Phase 5).
+
+### Known gaps (to verify with real data)
+
+- Fixtures are **synthetic**, built from the documented transcript shape. Run `burnrate report` and `burnrate doctor` against a real `~/.claude` and compare with Claude Code's `/cost` before the first release.
+- It's unconfirmed how fast-mode requests are marked in transcripts (the parser accepts `usage.speed: "fast"`).
+- Not on npm yet. Install from source (see README).
+
+### Ideas added for later phases
+
+- **Phase 2:** persist events to SQLite so reports outlive the 30-day transcript retention. **Calibrate** plan limits automatically: when Claude Code reports `five_hour.used_percentage = p` while local usage in that window is `c`, then limit ≈ `c / p`. That gives subscribers a realistic estimate in other tools and the dashboard, too.
+- **Phase 4:** the status line already supports `rate_limits.spend_limit`. Mirror it in the overlay for org-gateway users.
+- **Phase 5:** a `--format json` mode for `statusline`, so other status line tools can embed BurnRate data.
+
+---
+
 ## 1. What it is
 
 A local-first, open-source toolkit that answers two questions for anyone using AI coding tools and APIs:
@@ -124,7 +164,8 @@ Adding a new tool = one new adapter package plus a pricing entry. Document this 
 
 ### Storage
 
-- SQLite (better-sqlite3) at `~/.burnrate/burnrate.db`, deduped by event id
+- Phase 1: incremental JSON cache under `~/.burnrate/cache/` (no native dependencies)
+- Phase 2: SQLite at `~/.burnrate/burnrate.db`, deduped by event id (`better-sqlite3` or built-in `node:sqlite`, pending approval)
 - Secrets via OS keychain (`keytar` or equivalent), never in the DB or config
 
 ## 5. Phased build plan
@@ -189,7 +230,7 @@ Adding a new tool = one new adapter package plus a pricing entry. Document this 
 
 ## 7. Risks and honest constraints
 
-- **Subscription limits are not officially exposed.** Plan limits (Pro/Max style rolling windows) usually have no public "remaining" API, so the meter is an _estimate_ from local logs plus user-configured limits. Label it as an estimate in the UI.
+- **Subscription limits are only partly exposed.** Claude Code passes real 5h/7d percentages to the status line for Pro/Max (see section 0), and the meter uses them. Everywhere else (API-key users, other tools, the extension), the meter is an _estimate_ from local logs plus user-configured limits, marked with `~` in the UI.
 - **Log formats change.** Each adapter needs fixture tests and a version-tolerant parser; fail soft, never crash the status line.
 - **Status line must be fast.** Keep `burnrate statusline` under ~50ms (cache aggressively, no network calls in the hot path).
 - **Pricing drifts.** Keep the pricing table data-only with a source URL and date, and show "pricing last updated" in the UI.
