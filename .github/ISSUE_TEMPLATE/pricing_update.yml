@@ -1,0 +1,30 @@
+name: Pricing update
+description: A model is missing or its price changed
+labels: [pricing]
+body:
+  - type: input
+    id: model
+    attributes:
+      label: Model id
+      placeholder: claude-opus-5-5
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Official pricing page URL
+      description: We only accept prices from the provider's own published pricing.
+    validations:
+      required: true
+  - type: textarea
+    id: prices
+    attributes:
+      label: Prices (USD per 1M tokens)
+      value: |
+        input:
+        output:
+        cache write (5m):
+        cache write (1h):
+        cache read:
+    validations:
+      required: true

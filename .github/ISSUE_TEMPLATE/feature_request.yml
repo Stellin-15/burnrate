@@ -1,0 +1,19 @@
+name: Feature or new tool
+description: Suggest a feature, widget, or a tool BurnRate should support
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would help?
+  - type: input
+    id: tool
+    attributes:
+      label: Tool (if asking for a new adapter)
+      description: e.g. Codex CLI, Gemini CLI, Cursor, OpenCode, Aider. Links to where it stores usage data help a lot.

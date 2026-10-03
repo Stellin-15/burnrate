@@ -1,0 +1,38 @@
+name: Bug report
+description: Something is wrong or broken
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you expect, and what did you see instead? Paste the status line or report output if relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Output of `burnrate doctor`
+      render: text
+    validations:
+      required: true
+  - type: input
+    id: tool-version
+    attributes:
+      label: Claude Code (or other tool) version
+      placeholder: "2.1.300"
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options: [macOS, Linux, Windows, Other]
+    validations:
+      required: true
+  - type: textarea
+    id: sample
+    attributes:
+      label: Sample log line (optional)
+      description: |
+        If a transcript line parses wrong, paste ONE line with all message content removed.
+        Transcripts can contain secrets and private code. Keep only `type`, `timestamp`, `message.id`, `message.model` and `message.usage`.
+      render: json
