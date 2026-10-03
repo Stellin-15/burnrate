@@ -20,7 +20,7 @@
     "anthropic"
   ],
   "engines": {
-    "node": ">=22"
+    "node": ">=22.13"
   },
   "scripts": {
     "build": "tsup && node scripts/copy-dashboard.mjs",
@@ -30,6 +30,7 @@
     "@burnrate/adapter-claude-code": "workspace:*",
     "@burnrate/core": "workspace:*",
     "@burnrate/pricing": "workspace:*",
-    "@burnrate/dashboard": "workspace:*"
+    "@burnrate/dashboard": "workspace:*",
+    "@burnrate/store": "workspace:*"
   }
 }

@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { burnrateHome, loadConfig, sumEvents } from "@burnrate/core";
 import { findModelPricing, pricingTable } from "@burnrate/pricing";
+import { openStoreQuietly } from "@burnrate/store";
 import {
   claudeConfigDirs,
   claudeSettingsPath,
@@ -19,8 +20,9 @@ export async function runDoctor(): Promise<number> {
   };
 
   console.log("Environment");
-  const major = Number(process.versions.node.split(".")[0]);
-  (major >= 22 ? ok : bad)(`Node ${process.versions.node}${major >= 22 ? "" : " (BurnRate needs Node 22+)"}`);
+  const [major = 0, minor = 0] = process.versions.node.split(".").map(Number);
+  const nodeOk = major > 22 || (major === 22 && minor >= 13);
+  (nodeOk ? ok : bad)(`Node ${process.versions.node}${nodeOk ? "" : " (BurnRate needs Node 22.13+)"}`);
   ok(`BurnRate data dir: ${burnrateHome()}`);
 
   console.log("\nConfig");
@@ -62,6 +64,20 @@ export async function runDoctor(): Promise<number> {
     if (unknown.length)
       warn(`Models without pricing (cost shown as $0): ${unknown.join(", ")}. PRs to models.json welcome.`);
     else if (totals.requests) ok("Every model seen has pricing");
+  }
+
+  console.log("\nHistory");
+  const { store, problem } = openStoreQuietly();
+  if (!store) warn(`History archive unavailable: ${problem}`);
+  else {
+    try {
+      const oldest = store.loadEvents().at(0)?.timestamp;
+      ok(
+        `${store.path}: ${store.eventCount()} request(s) archived${oldest ? ` since ${oldest.slice(0, 10)}` : ""}`,
+      );
+    } finally {
+      store.close();
+    }
   }
 
   console.log("\nPricing");

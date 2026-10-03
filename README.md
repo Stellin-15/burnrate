@@ -17,7 +17,7 @@ Support for other tools (Codex CLI, Gemini CLI, OpenCode, Aider) and API-key spe
 
 ## Quick start
 
-Requires **Node.js 22+** and Claude Code.
+Requires **Node.js 22.13+** and Claude Code.
 
 ```sh
 # 1. Get it (from source until the first npm release)

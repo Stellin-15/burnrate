@@ -87,6 +87,9 @@ importers:
       '@burnrate/pricing':
         specifier: workspace:*
         version: link:../pricing
+      '@burnrate/store':
+        specifier: workspace:*
+        version: link:../store
 
   packages/core:
     dependencies:
@@ -95,6 +98,12 @@ importers:
         version: link:../pricing
 
   packages/pricing: {}
+
+  packages/store:
+    dependencies:
+      '@burnrate/core':
+        specifier: workspace:*
+        version: link:../core
 
 packages:
 
