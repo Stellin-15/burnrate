@@ -89,7 +89,7 @@ describe("buildStatusModel", () => {
       sevenDay: { costUsd: 20, totalTokens: 100 },
     };
     const m = buildStatusModel(api, local, {}, NOW);
-    expect(m.fiveHour).toEqual({ costUsd: 2, resetsAt: NOW + 4 * 3600_000 });
+    expect(m.fiveHour).toEqual({ costUsd: 2, resetsAt: NOW + 4 * 3600_000, resetEstimated: true });
     expect(m.sevenDay).toEqual({ costUsd: 20 });
     expect(m.contextPercent).toBeUndefined(); // null early in a session
     expect(m.todayCostUsd).toBe(3);

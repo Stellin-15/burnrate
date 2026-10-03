@@ -49,7 +49,7 @@ describe("buildView", () => {
       rateLimits: { five_hour: { used_percentage: 99, resets_at: sec(NOW - H) } },
     };
     const v = buildView(stale, local, DEFAULT_CONFIG, { now: NOW });
-    expect(v.text).toBe("$(pulse) 5h $12.50 ↻ 4h │ $46.12 today");
+    expect(v.text).toBe("$(pulse) 5h $12.50 ↻ ~4h │ $46.12 today");
     expect(v.level).toBe("normal");
     expect(v.tooltip).toContain("The chat panel doesn't report them");
   });
@@ -96,5 +96,17 @@ describe("dashboardLaunch", () => {
     expect(dashboardLaunch("~/my-statusline.sh")).toBeUndefined();
     expect(dashboardLaunch("node /x/other-tool.js statusline")).toBeUndefined();
     expect(dashboardLaunch(undefined)).toBeUndefined();
+  });
+});
+
+describe("estimated reset times", () => {
+  it("marks guessed resets with ~ and explains why, but never real ones", () => {
+    const guessed = buildView(undefined, local, DEFAULT_CONFIG, { now: NOW });
+    expect(guessed.text).toContain("↻ ~4h");
+    expect(guessed.rows[0]!.value).toContain("resets in about 4h");
+    expect(guessed.tooltip).toContain("across all Claude apps");
+    const real = buildView(snapshot(), local, DEFAULT_CONFIG, { now: NOW });
+    expect(real.text).toContain("↻ 2h16m");
+    expect(real.tooltip).not.toContain("across all Claude apps");
   });
 });
