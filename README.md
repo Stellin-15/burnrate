@@ -72,13 +72,13 @@ Colors go green → yellow (60%) → red (85%). Both thresholds are configurable
 
 ## VS Code status bar
 
-Claude Code's VS Code chat panel doesn't show custom status lines, so BurnRate has a small VS Code extension that puts the meter in VS Code's status bar:
+Claude Code's VS Code chat panel doesn't show custom status lines, so BurnRate has a small VS Code extension. It adds a **BurnRate section to Claude Code's own sidebar**, right under the chat, and puts the same meter in VS Code's status bar:
 
 ```
-5h 39% ↻ 2h16m │ 7d 37% │ $46.12 today
+5h 39% ↻ 2h16m │ 7d 37% ↻ 4d4h │ $46.12 today
 ```
 
-Hover for details, or click to open the dashboard. It turns amber at 60% and red at 85%. It only reads local files and makes no network requests.
+The sidebar section lists your session (5-hour) and weekly usage with when each resets, plus today's and the last 7 days' cost. Hover the status bar item for details, or click either to open the dashboard. It turns amber at 60% and red at 85%. It only reads local files and makes no network requests.
 
 Build and install it from the repo:
 
