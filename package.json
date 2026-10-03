@@ -10,12 +10,13 @@
     "build": "pnpm -r --filter ./packages/** run build",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "pnpm -r run typecheck",
+    "typecheck": "pnpm build && pnpm -r run typecheck",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "validate:pricing": "pnpm --filter @burnrate/pricing run validate",
-    "changeset": "changeset"
+    "changeset": "changeset",
+    "ci": "pnpm lint && pnpm format:check && pnpm validate:pricing && pnpm typecheck && pnpm test"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.0",
@@ -27,5 +28,10 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.40.0",
     "vitest": "^3.2.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   }
 }
