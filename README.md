@@ -3,7 +3,7 @@
 **A live usage-limit meter and cost reports for Claude Code. Local-first, no account, nothing leaves your machine.**
 
 ```
-Opus 5.5 │ 5h ▰▰▰▰▰▰▱▱ 72% ↻1h12m ⚠ limit in 48m │ 7d 41% ↻3d4h │ ctx 31% │ $1.23 session │ $12.80 today
+Opus 5.5 │ 5h ▰▰▰▰▰▰▱▱ 72% ↻ 1h12m ⚠ limit in 48m │ 7d 41% ↻ 3d4h │ ctx 31% │ $1.23 session │ $12.80 today
 ```
 
 BurnRate answers two questions while you work:
@@ -47,18 +47,18 @@ burnrate statusline --demo --theme plain
 
 ## What the meter shows
 
-| Widget        | Example                  | Where the number comes from                                                                                           |
-| ------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------- |
-| `model`       | `Opus 5.5 ⚡`            | Claude Code (⚡ = fast mode)                                                                                          |
-| `fiveHour`    | `5h ▰▰▰▰▰▰▱▱ 72% ↻1h12m` | **Pro/Max:** Claude Code's real rate-limit data. **Otherwise:** this 5-hour block's cost, or `~%` of a limit you set. |
-| `sevenDay`    | `7d 41% ↻3d4h`           | Same as above, for the weekly window                                                                                  |
-| `spendLimit`  | `spend $314/$500 63%`    | Claude Code, when an organization gateway sets a spend limit                                                          |
-| `context`     | `ctx 31%`                | Claude Code: how full the context window is                                                                           |
-| `sessionCost` | `$1.23 session`          | Claude Code's estimate for this session                                                                               |
-| `todayCost`   | `$12.80 today`           | BurnRate, from local transcripts across all your sessions                                                             |
-| `blockCost`   | `$4.10 block`            | BurnRate: spend in the current 5-hour block                                                                           |
-| `burnRate`    | `$2.35/h`                | BurnRate: average spend rate in the current block                                                                     |
-| `cache`       | `cache 91%`              | Claude Code: prompt-cache hit ratio                                                                                   |
+| Widget        | Example                   | Where the number comes from                                                                                           |
+| ------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `model`       | `Opus 5.5 ⚡`             | Claude Code (⚡ = fast mode)                                                                                          |
+| `fiveHour`    | `5h ▰▰▰▰▰▰▱▱ 72% ↻ 1h12m` | **Pro/Max:** Claude Code's real rate-limit data. **Otherwise:** this 5-hour block's cost, or `~%` of a limit you set. |
+| `sevenDay`    | `7d 41% ↻ 3d4h`           | Same as above, for the weekly window                                                                                  |
+| `spendLimit`  | `spend $314/$500 63%`     | Claude Code, when an organization gateway sets a spend limit                                                          |
+| `context`     | `ctx 31%`                 | Claude Code: how full the context window is                                                                           |
+| `sessionCost` | `$1.23 session`           | Claude Code's estimate for this session                                                                               |
+| `todayCost`   | `$12.80 today`            | BurnRate, from local transcripts across all your sessions                                                             |
+| `blockCost`   | `$4.10 block`             | BurnRate: spend in the current 5-hour block                                                                           |
+| `burnRate`    | `$2.35/h`                 | BurnRate: average spend rate in the current block                                                                     |
+| `cache`       | `cache 91%`               | Claude Code: prompt-cache hit ratio                                                                                   |
 
 **`⚠ limit in 48m`** appears when, at your current pace, you would hit the 5-hour or weekly limit before it resets. BurnRate projects this from how fast the percentage has been rising over the last hour.
 

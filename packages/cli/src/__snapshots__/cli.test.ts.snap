@@ -1,9 +1,9 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`renderStatusLine themes > default (no color) 1`] = `"Opus 5.5 │ 5h ▰▰▰▰▰▰▱▱ 72% ↻1h12m ⚠ limit in 48m │ 7d 41% ↻3d4h │ ctx 31% │ $1.23 session │ $12.80 today │ $4.10 block │ $2.35/h │ cache 91%"`;
+exports[`renderStatusLine themes > default (no color) 1`] = `"Opus 5.5 │ 5h ▰▰▰▰▰▰▱▱ 72% ↻ 1h12m ⚠ limit in 48m │ 7d 41% ↻ 3d4h │ ctx 31% │ $1.23 session │ $12.80 today │ $4.10 block │ $2.35/h │ cache 91%"`;
 
-exports[`renderStatusLine themes > default theme with color 1`] = `"[1mOpus 5.5[22m[2m │ [22m[2m5h[22m [33m▰▰▰▰▰▰▱▱[39m [33m72%[39m [2m↻1h12m[22m [31m⚠ limit in 48m[39m[2m │ [22m[2m7d[22m [32m41%[39m [2m↻3d4h[22m[2m │ [22m[2mctx[22m [32m31%[39m[2m │ [22m$1.23 [2msession[22m[2m │ [22m$12.80 [2mtoday[22m"`;
+exports[`renderStatusLine themes > default theme with color 1`] = `"[1mOpus 5.5[22m[2m │ [22m[2m5h[22m [33m▰▰▰▰▰▰▱▱[39m [33m72%[39m [2m↻ 1h12m[22m [31m⚠ limit in 48m[39m[2m │ [22m[2m7d[22m [32m41%[39m [2m↻ 3d4h[22m[2m │ [22m[2mctx[22m [32m31%[39m[2m │ [22m$1.23 [2msession[22m[2m │ [22m$12.80 [2mtoday[22m"`;
 
-exports[`renderStatusLine themes > minimal (no color) 1`] = `"Opus 5.5 │ 5h 72% ↻1h12m ⚠ limit in 48m │ 7d 41% ↻3d4h │ ctx 31% │ $1.23 session │ $12.80 today │ $4.10 block │ $2.35/h │ cache 91%"`;
+exports[`renderStatusLine themes > minimal (no color) 1`] = `"Opus 5.5 │ 5h 72% ↻ 1h12m ⚠ limit in 48m │ 7d 41% ↻ 3d4h │ ctx 31% │ $1.23 session │ $12.80 today │ $4.10 block │ $2.35/h │ cache 91%"`;
 
 exports[`renderStatusLine themes > plain (no color) 1`] = `"Opus 5.5 | 5h [######--] 72% reset 1h12m ! limit in 48m | 7d 41% reset 3d4h | ctx 31% | $1.23 session | $12.80 today | $4.10 block | $2.35/h | cache 91%"`;

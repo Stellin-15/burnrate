@@ -66,7 +66,7 @@ export function renderStatusLine(m: StatusModel, opts: RenderOptions): string {
   const paint: Paint = opts.color && !plain ? paintAnsi : paintNone;
   const money = (usd: number) => formatMoney(usd, config.currency);
   const label = (s: string) => paint("dim", s);
-  const resetIcon = plain ? "reset " : "↻";
+  const resetIcon = plain ? "reset " : "↻ ";
   const warnIcon = plain ? "!" : "⚠";
 
   const windowWidget = (name: string, w: WindowView | undefined, withBar: boolean): string | undefined => {
