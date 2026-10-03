@@ -27,7 +27,7 @@ The Claude Code VS Code extension's chat panel doesn't display custom status lin
 
 1. **Groundwork, done:** every status line run saves the real limits and recent session IDs to `~/.burnrate/state/last-status.json`, and the dashboard already shows them.
 2. **Confirm** whether a _new_ chat-panel conversation runs the status line command. If it does, the panel feeds real limits too; if not, limits update whenever any terminal Claude Code session runs.
-3. **Build a small VS Code extension** (`apps/vscode`): a status bar item showing the same meter (5h/7d from the snapshot, today's cost from the local summary), a tooltip with details, and a click that opens `burnrate dashboard`. It reads local files only, with no network access.
+3. **Built (2026-10-03):** `apps/vscode`, the "BurnRate" VS Code extension. A status bar item shows the same meter (real 5h/7d limits from the snapshot; today's cost from the shared, cached transcript summary), a tooltip has details, and a click starts `burnrate dashboard` using the node and script that `init` wrote into Claude Code's settings. It reads local files only and makes no network calls. It updates within a second of a new snapshot (file watcher), otherwise every 30 seconds. Packaged as a 17 KB `.vsix`; F5 runs it from the repo.
 
 ### Phase 2 notes
 

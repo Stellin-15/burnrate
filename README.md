@@ -70,6 +70,25 @@ Colors go green → yellow (60%) → red (85%). Both thresholds are configurable
 - **API-key users, or before your first message in a session:** there's no official "remaining" number. BurnRate shows what you've spent in the window instead. If you set your own limit in the config, it shows an **estimate**, marked with `~` (for example `5h ~40%`).
 - **Dollar amounts** are API list-price equivalents from [`models.json`](packages/pricing/models.json), including cache reads/writes and fast mode. On a subscription you are not billed per token. Treat them as "what this would cost on the API".
 
+## VS Code status bar
+
+Claude Code's VS Code chat panel doesn't show custom status lines, so BurnRate has a small VS Code extension that puts the meter in VS Code's status bar:
+
+```
+5h 39% ↻ 2h16m │ 7d 37% │ $46.12 today
+```
+
+Hover for details, or click to open the dashboard. It turns amber at 60% and red at 85%. It only reads local files and makes no network requests.
+
+Build and install it from the repo:
+
+```sh
+pnpm --filter burnrate-vscode run package          # creates apps/vscode/burnrate-vscode.vsix
+code --install-extension apps/vscode/burnrate-vscode.vsix
+```
+
+Plan limits come from the BurnRate status line, so they refresh whenever Claude Code runs in a terminal. Between runs, the bar shows the last known limits until their window resets. To try it without installing, open this repo in VS Code and press **F5** ("Run BurnRate VS Code extension").
+
 ## Reports
 
 ```sh
@@ -203,14 +222,14 @@ Every option, with examples (custom limits, other currencies, extra data dirs), 
 
 ## Roadmap
 
-| Phase | Status | Scope                                                                                        |
-| ----- | ------ | -------------------------------------------------------------------------------------------- |
-| 0     | ✅     | Monorepo, CI on macOS/Linux/Windows, tooling                                                 |
-| 1     | ✅     | Pricing table, cost engine, Claude Code adapter, status line meter, reports, `init`          |
-| 2     | ✅     | Local web dashboard (`burnrate dashboard`), budgets, and a multi-model "what if" calculator  |
-| 3     | ✅     | Usage history (SQLite), Anthropic and OpenAI billed spend, keys in the OS keychain           |
-| 4     | next   | VS Code status bar meter; Codex CLI, Gemini CLI, OpenCode, Aider; desktop overlay; extension |
-| 5     |        | Theme packs, layout editor, docs site, Homebrew/winget/scoop                                 |
+| Phase | Status      | Scope                                                                                                            |
+| ----- | ----------- | ---------------------------------------------------------------------------------------------------------------- |
+| 0     | ✅          | Monorepo, CI on macOS/Linux/Windows, tooling                                                                     |
+| 1     | ✅          | Pricing table, cost engine, Claude Code adapter, status line meter, reports, `init`                              |
+| 2     | ✅          | Local web dashboard (`burnrate dashboard`), budgets, and a multi-model "what if" calculator                      |
+| 3     | ✅          | Usage history (SQLite), Anthropic and OpenAI billed spend, keys in the OS keychain                               |
+| 4     | in progress | Done: VS Code status bar meter. Next: Codex CLI, Gemini CLI, OpenCode, Aider; desktop overlay; browser extension |
+| 5     |             | Theme packs, layout editor, docs site, Homebrew/winget/scoop                                                     |
 
 The full plan is in [PROJECT_PLAN.md](PROJECT_PLAN.md).
 
