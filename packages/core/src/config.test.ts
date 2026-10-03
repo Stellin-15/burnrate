@@ -1,4 +1,4 @@
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -83,5 +83,13 @@ describe("format", () => {
 
   it("measures visible length without ANSI codes", () => {
     expect(visibleLength("\x1b[32mabc\x1b[0m")).toBe(3);
+  });
+});
+
+describe("examples/*.json", () => {
+  const dir = new URL("../../../examples/", import.meta.url);
+  it.each(readdirSync(dir).filter((f) => f.endsWith(".json")))("%s is valid", (file) => {
+    const { warnings } = resolveConfig(JSON.parse(readFileSync(new URL(file, dir), "utf8")));
+    expect(warnings).toEqual([]);
   });
 });
