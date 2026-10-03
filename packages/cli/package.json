@@ -1,0 +1,34 @@
+{
+  "name": "burnrate-cli",
+  "version": "0.1.0",
+  "description": "Live usage-limit meter and cost reports for Claude Code and other AI coding tools. Local-first.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "burnrate": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "claude-code",
+    "statusline",
+    "ai",
+    "usage",
+    "cost",
+    "tokens",
+    "anthropic"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@burnrate/adapter-claude-code": "workspace:*",
+    "@burnrate/core": "workspace:*",
+    "@burnrate/pricing": "workspace:*"
+  }
+}
