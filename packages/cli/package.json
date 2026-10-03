@@ -23,12 +23,13 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && node scripts/copy-dashboard.mjs",
     "typecheck": "tsc -p tsconfig.json"
   },
   "devDependencies": {
     "@burnrate/adapter-claude-code": "workspace:*",
     "@burnrate/core": "workspace:*",
-    "@burnrate/pricing": "workspace:*"
+    "@burnrate/pricing": "workspace:*",
+    "@burnrate/dashboard": "workspace:*"
   }
 }
