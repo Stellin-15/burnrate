@@ -6,6 +6,13 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
+    // Plain Node scripts (seeders, build helpers).
+    files: ["**/*.mjs"],
+    languageOptions: {
+      globals: { process: "readonly", console: "readonly", URL: "readonly", Buffer: "readonly" },
+    },
+  },
+  {
     rules: {
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
       "no-console": "off",
