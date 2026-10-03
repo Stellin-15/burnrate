@@ -102,8 +102,15 @@ describe("provider data", () => {
     const s = open();
     s.upsertProviderUsage([usage]);
     s.upsertProviderUsage([{ ...usage, outputTokens: 75, requests: 3 }]);
+    // Timestamps come back in full ISO form, whatever format the provider sent.
     expect(s.providerUsage("2026-09-01", "2026-10-01")).toEqual([
-      { ...usage, outputTokens: 75, requests: 3 },
+      {
+        ...usage,
+        bucketStart: "2026-09-01T00:00:00.000Z",
+        bucketEnd: "2026-09-02T00:00:00.000Z",
+        outputTokens: 75,
+        requests: 3,
+      },
     ]);
   });
 

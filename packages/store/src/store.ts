@@ -5,6 +5,9 @@ import { burnrateHome, type ProviderCostRow, type ProviderUsageRow, type UsageEv
 export type { ProviderCostRow, ProviderUsageRow };
 import { openDatabase, type DatabaseSync } from "./sqlite.js";
 
+/** One timestamp format in the database (providers send both ...00Z and ...00.000Z), so range queries compare correctly. */
+const iso = (s: string) => new Date(s).toISOString();
+
 const SCHEMA_VERSION = 1;
 
 const MIGRATIONS: Record<number, string> = {
@@ -188,8 +191,8 @@ export class BurnrateStore {
       for (const r of rows)
         stmt.run(
           r.provider,
-          r.bucketStart,
-          r.bucketEnd,
+          iso(r.bucketStart),
+          iso(r.bucketEnd),
           r.model,
           r.scope,
           r.uncachedInputTokens,
@@ -219,9 +222,17 @@ export class BurnrateStore {
       INSERT OR REPLACE INTO provider_costs (provider, bucket_start, bucket_end, scope, item, model, amount_usd)
       VALUES (?, ?, ?, ?, ?, ?, ?)`);
     this.transaction(() => {
-      del.run(provider, from, to);
+      del.run(provider, iso(from), iso(to));
       for (const r of rows)
-        ins.run(r.provider, r.bucketStart, r.bucketEnd, r.scope, r.item, r.model ?? null, r.amountUsd);
+        ins.run(
+          r.provider,
+          iso(r.bucketStart),
+          iso(r.bucketEnd),
+          r.scope,
+          r.item,
+          r.model ?? null,
+          r.amountUsd,
+        );
     });
   }
 
@@ -230,7 +241,7 @@ export class BurnrateStore {
       .prepare(
         `SELECT * FROM provider_usage WHERE bucket_start >= ? AND bucket_start < ? ${provider ? "AND provider = ?" : ""} ORDER BY bucket_start`,
       )
-      .all(...[from, to, ...(provider ? [provider] : [])]) as Array<Record<string, unknown>>;
+      .all(...[iso(from), iso(to), ...(provider ? [provider] : [])]) as Array<Record<string, unknown>>;
     return rows.map((r) => ({
       provider: r.provider as ProviderUsageRow["provider"],
       bucketStart: r.bucket_start as string,
@@ -251,7 +262,7 @@ export class BurnrateStore {
       .prepare(
         `SELECT * FROM provider_costs WHERE bucket_start >= ? AND bucket_start < ? ${provider ? "AND provider = ?" : ""} ORDER BY bucket_start`,
       )
-      .all(...[from, to, ...(provider ? [provider] : [])]) as Array<Record<string, unknown>>;
+      .all(...[iso(from), iso(to), ...(provider ? [provider] : [])]) as Array<Record<string, unknown>>;
     return rows.map((r) => ({
       provider: r.provider as ProviderCostRow["provider"],
       bucketStart: r.bucket_start as string,
