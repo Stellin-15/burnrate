@@ -10,6 +10,7 @@ import { buildReport, filterEvents, mergeTotals, parseDateArg, projectName } fro
 import { renderStatusLine } from "./render.js";
 import { computeSummary, recordSample, type SampleState } from "./summary.js";
 import { renderTable, toCsv } from "./table.js";
+import { updateSnapshot } from "./snapshot.js";
 
 const NOW = Date.parse("2026-10-01T12:00:00Z");
 const fixture = (name: string) =>
@@ -341,5 +342,22 @@ describe("report polish", () => {
       2,
     );
     expect(out.split("\n")[2]).toBe("x   api       1");
+  });
+});
+
+describe("status snapshot", () => {
+  it("remembers the latest rate limits and recent sessions", () => {
+    const pro = parseStatuslineInput(fixture("statusline-pro.json"));
+    const api = parseStatuslineInput(fixture("statusline-api.json"));
+    const a = updateSnapshot(undefined, pro, 1000);
+    expect(a.rateLimits?.five_hour?.used_percentage).toBe(72.4);
+    expect(a.recentSessions.map((s) => s.id)).toEqual(["sess-1111"]);
+    // An API-key session has no rate limits: keep the last known ones.
+    const b = updateSnapshot(a, api, 2000);
+    expect(b.rateLimitsAt).toBe(1000);
+    expect(b.sessionId).toBe("sess-2222");
+    expect(b.recentSessions.map((s) => s.id)).toEqual(["sess-2222", "sess-1111"]);
+    const c = updateSnapshot(b, pro, 3000);
+    expect(c.recentSessions.map((s) => s.id)).toEqual(["sess-1111", "sess-2222"]);
   });
 });
