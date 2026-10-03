@@ -9,9 +9,9 @@ Opus 5.5 │ 5h ▰▰▰▰▰▰▱▱ 72% ↻1h12m ⚠ limit in 48m │ 7d 41
 BurnRate answers two questions while you work:
 
 1. **How much of my limit is left right now?** A meter in Claude Code's status line shows your 5-hour and weekly usage, when each resets, and warns you before you run out.
-2. **What is this costing, and on which model?** `burnrate report` breaks usage down by day, week, month, model, project, session, or 5-hour block.
+2. **What is this costing, and on which model?** `burnrate dashboard` opens a local web page with daily spend, budgets, and a model cost calculator. `burnrate report` gives the same breakdowns in the terminal.
 
-Support for other tools (Codex CLI, Gemini CLI, OpenCode, Aider), a local dashboard, and API-key spend tracking is on the [roadmap](#roadmap).
+Support for other tools (Codex CLI, Gemini CLI, OpenCode, Aider) and API-key spend tracking is on the [roadmap](#roadmap).
 
 ---
 
@@ -95,6 +95,27 @@ Total            800   2.4M    786k        347M          17M  $270.87
 
 Options: `--since 2026-09-01` or `--since 7d`, `--until`, `--project <text>`, `--model <text>`, `--limit <n>`, and `--json` / `--csv` for spreadsheets or scripts.
 
+## Dashboard
+
+```sh
+burnrate dashboard
+```
+
+This opens a page in your browser, served from your own machine:
+
+![BurnRate dashboard: total spend, budget meters, and daily spend by model](docs/images/dashboard.png)
+
+- **Usage:** total spend for the period, budget meters, what caching saved you, daily spend by model (with a table view), line items by model and project, and your most expensive sessions. Filter by 7 days, 30 days, 90 days, or all time, and by project or model. It refreshes every 30 seconds.
+- **Cost calculator:** describe a workload, or start from your own average request, and see what it costs per request, day, and month on every model. **"What if"** re-prices your actual history on another model.
+- **Export:** CSV for daily spend, models, projects, sessions, or every request; JSON for every request.
+- **Budgets:** add `"budgets": { "daily": 25, "monthly": 400 }` to your config. Meters turn amber when you're on pace to go over and red when you have.
+
+![Cost calculator comparing a workload across models](docs/images/calculator.png)
+
+_Screenshots use synthetic demo data._
+
+The dashboard binds to `127.0.0.1` only. Each run prints a link with a one-time token, and the page can't load data without it, so other websites and other users on your network can't read your usage. Options: `--port <n>`, `--no-open`.
+
 ## Configuration
 
 Optional. Create a config file with defaults:
@@ -111,6 +132,7 @@ burnrate config validate
   "thresholds": { "warn": 60, "danger": 85 },
   "barWidth": 8,
   "limits": {},
+  "budgets": {},
   "currency": { "code": "USD", "symbol": "$", "rateFromUsd": 1 },
   "cacheSeconds": 20,
   "claudeDirs": []
@@ -128,13 +150,14 @@ Every option, with examples (custom limits, other currencies, extra data dirs), 
 | `burnrate init claude-code --force`            | Replace an existing custom status line (it can be restored later)    |
 | `burnrate uninstall claude-code`               | Remove the meter and restore your previous status line               |
 | `burnrate report [view]`                       | Usage and cost tables                                                |
+| `burnrate dashboard`                           | Local web dashboard, budgets, and cost calculator                    |
 | `burnrate statusline --demo [--theme <name>]`  | Preview the meter                                                    |
 | `burnrate config [show\|path\|init\|validate]` | Manage the config file                                               |
 | `burnrate doctor`                              | Check Node, Claude Code data, the installed status line, and pricing |
 
 ## Privacy
 
-- BurnRate makes **no network requests**.
+- BurnRate makes **no network requests**. The dashboard's fonts and scripts are bundled; it talks only to the local `burnrate dashboard` process.
 - It reads Claude Code's transcripts under `~/.claude/projects` (or `CLAUDE_CONFIG_DIR`) and keeps only token counts, model ids, timestamps, and project paths. It never stores message content.
 - Its own files live in `~/.burnrate/` (override with `BURNRATE_HOME`): your config, a small cache, and an error log. Delete the folder at any time.
 - `init` touches exactly one key, `statusLine`, in Claude Code's settings, and saves a timestamped backup next to the file first.
@@ -154,8 +177,8 @@ Every option, with examples (custom limits, other currencies, extra data dirs), 
 | ----- | ------ | --------------------------------------------------------------------------------------------- |
 | 0     | ✅     | Monorepo, CI on macOS/Linux/Windows, tooling                                                  |
 | 1     | ✅     | Pricing table, cost engine, Claude Code adapter, status line meter, reports, `init`           |
-| 2     | next   | Local web dashboard (`burnrate dashboard`) and a multi-model "what if" cost calculator        |
-| 3     |        | API-key spend tracking (Anthropic, OpenAI, Google usage APIs), keys stored in the OS keychain |
+| 2     | ✅     | Local web dashboard (`burnrate dashboard`), budgets, and a multi-model "what if" calculator   |
+| 3     | next   | API-key spend tracking (Anthropic, OpenAI, Google usage APIs), keys stored in the OS keychain |
 | 4     |        | Codex CLI, Gemini CLI, OpenCode, and Aider adapters; desktop overlay; browser extension       |
 | 5     |        | Theme packs, layout editor, docs site, Homebrew/winget/scoop                                  |
 

@@ -82,6 +82,16 @@ BurnRate never fetches exchange rates. You set the rate:
 { "currency": { "code": "EUR", "symbol": "€", "rateFromUsd": 0.92 } }
 ```
 
+### `budgets`
+
+Spending caps in USD per calendar day, week (starting Monday), and month, in local time. Shown as meters in `burnrate dashboard`:
+
+```json
+{ "budgets": { "daily": 25, "weekly": 120, "monthly": 400 } }
+```
+
+A meter turns amber at 80% or when your current pace would exceed the budget by the end of the period, and red once you're over. Pace isn't projected during the first hour of a period, because one early request would make the estimate meaningless. Budgets always count all your usage, whatever filters the dashboard has on.
+
 ### `cacheSeconds`
 
 How long the status line reuses its last transcript scan. Default `20`. Real rate-limit numbers from Claude Code are always live; this only affects `todayCost`, `blockCost`, `burnRate`, and estimates.
