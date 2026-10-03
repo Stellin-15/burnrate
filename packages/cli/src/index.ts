@@ -9,6 +9,10 @@ Usage
   burnrate uninstall claude-code                     Remove it (restores any previous status line)
   burnrate report [view] [options]                   Usage and cost tables
   burnrate dashboard [--port <n>] [--no-open]        Local web dashboard and cost calculator
+  burnrate keys add|remove|test <anthropic|openai>   Manage Admin API keys (OS keychain)
+  burnrate keys list                                 Show which keys are set
+  burnrate sync [anthropic|openai] [--days 30]       Pull billed usage and cost from provider APIs
+  burnrate spend [--by day|model] [--days 30]        Billed cost vs. list price, per day or model
   burnrate statusline                                Render the meter (Claude Code runs this)
   burnrate statusline --demo [--theme <name>]        Preview the meter with sample data
   burnrate config [show|path|init|validate]          Manage ~/.burnrate/config.json
@@ -49,6 +53,9 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
       command: { type: "string" },
       refresh: { type: "string" },
       port: { type: "string" },
+      days: { type: "string" },
+      by: { type: "string" },
+      "no-sync": { type: "boolean" },
       "no-open": { type: "boolean" },
     },
   });
@@ -118,6 +125,26 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
       }
       const { runDashboard } = await import("./commands/dashboard.js");
       return runDashboard({ port, open: !values["no-open"] });
+    }
+    case "keys":
+    case "sync":
+    case "spend": {
+      const days = str(values.days) ? Number(values.days) : undefined;
+      if (days !== undefined && !(Number.isInteger(days) && days >= 1 && days <= 365)) {
+        console.error("--days must be a whole number from 1 to 365");
+        return 2;
+      }
+      if (cmd === "keys") {
+        const { runKeys } = await import("./commands/keys.js");
+        return runKeys({ action: sub, provider: positionals[2], sync: !values["no-sync"], days });
+      }
+      const { runSync, runSpend } = await import("./commands/spend.js");
+      if (cmd === "sync") return runSync({ provider: sub, days });
+      return runSpend({
+        days,
+        by: str(values.by),
+        format: values.json ? "json" : values.csv ? "csv" : "table",
+      });
     }
     case "config": {
       const { runConfig } = await import("./commands/config.js");
