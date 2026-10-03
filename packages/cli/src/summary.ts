@@ -1,6 +1,8 @@
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
-import { dirname } from "node:path";
+import { dirname, join } from "node:path";
+import { claudeConfigDirs, loadClaudeCodeEvents } from "@burnrate/adapter-claude-code";
 import {
+  SEVEN_DAYS,
   activeBlock,
   blockBurnRate,
   dayKey,
@@ -108,4 +110,28 @@ export function recordSample(
   w.resetsAt = resetsAt;
   state[window] = w;
   return state;
+}
+
+/** Local summary from cache if fresh (shared by the status line and the VS Code extension), else rescan transcripts (incrementally) and refresh the cache. */
+export function getLocalSummary(config: BurnrateConfig, home: string, now: Date): LocalSummary | undefined {
+  const summaryPath = join(home, "cache", "statusline-summary.json");
+  const cached = readJson<LocalSummary>(summaryPath);
+  if (
+    cached &&
+    cached.day === dayKey(now) &&
+    now.getTime() - cached.computedAt >= 0 &&
+    now.getTime() - cached.computedAt < config.cacheSeconds * 1000
+  )
+    return cached;
+
+  const dirs = claudeConfigDirs(config.claudeDirs);
+  if (!dirs.length) return undefined;
+  const events = loadClaudeCodeEvents({
+    dirs,
+    since: new Date(now.getTime() - SEVEN_DAYS - 24 * 60 * 60 * 1000),
+    cachePath: join(home, "cache", "claude-code-events.json"),
+  });
+  const summary = computeSummary(events, config, now);
+  writeJsonQuiet(summaryPath, summary);
+  return summary;
 }

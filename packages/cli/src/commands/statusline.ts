@@ -1,25 +1,13 @@
 import { appendFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
-import {
-  SEVEN_DAYS,
-  dayKey,
-  burnrateHome,
-  loadConfig,
-  projectFromSamples,
-  type BurnrateConfig,
-} from "@burnrate/core";
+import { burnrateHome, loadConfig, projectFromSamples, type BurnrateConfig } from "@burnrate/core";
 import { findModelPricing } from "@burnrate/pricing";
-import {
-  claudeConfigDirs,
-  loadClaudeCodeEvents,
-  parseStatuslineInput,
-  type StatuslineInput,
-} from "@burnrate/adapter-claude-code";
+import { parseStatuslineInput, type StatuslineInput } from "@burnrate/adapter-claude-code";
 import { colorEnabled } from "../ansi.js";
 import { recordSnapshot } from "../snapshot.js";
 import { renderStatusLine, type StatusModel } from "../render.js";
 import {
-  computeSummary,
+  getLocalSummary,
   readJson,
   recordSample,
   writeJsonQuiet,
@@ -61,30 +49,6 @@ function needsLocalData(input: StatuslineInput, config: BurnrateConfig): boolean
   if (w.includes("fiveHour") && input.rate_limits?.five_hour?.used_percentage === undefined) return true;
   if (w.includes("sevenDay") && input.rate_limits?.seven_day?.used_percentage === undefined) return true;
   return false;
-}
-
-/** Local summary from cache if fresh, else rescan transcripts (incrementally) and refresh the cache. */
-function getLocalSummary(config: BurnrateConfig, home: string, now: Date): LocalSummary | undefined {
-  const summaryPath = join(home, "cache", "statusline-summary.json");
-  const cached = readJson<LocalSummary>(summaryPath);
-  if (
-    cached &&
-    cached.day === dayKey(now) &&
-    now.getTime() - cached.computedAt >= 0 &&
-    now.getTime() - cached.computedAt < config.cacheSeconds * 1000
-  )
-    return cached;
-
-  const dirs = claudeConfigDirs(config.claudeDirs);
-  if (!dirs.length) return undefined;
-  const events = loadClaudeCodeEvents({
-    dirs,
-    since: new Date(now.getTime() - SEVEN_DAYS - 24 * 60 * 60 * 1000),
-    cachePath: join(home, "cache", "claude-code-events.json"),
-  });
-  const summary = computeSummary(events, config, now);
-  writeJsonQuiet(summaryPath, summary);
-  return summary;
 }
 
 /** Combine Claude Code's own numbers (preferred) with local estimates (fallback). */
