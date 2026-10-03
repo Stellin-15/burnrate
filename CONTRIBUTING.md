@@ -19,6 +19,17 @@ node packages/cli/dist/cli.js statusline --demo
 node packages/cli/dist/cli.js report models
 ```
 
+### Working on the dashboard
+
+```sh
+node apps/dashboard/e2e/seed.mjs /tmp/fake-claude      # synthetic data, no real transcripts needed
+CLAUDE_CONFIG_DIR=/tmp/fake-claude BURNRATE_DASHBOARD_TOKEN=dev \
+  node packages/cli/dist/cli.js dashboard --no-open --port 4777
+pnpm --filter @burnrate/dashboard dev                  # Vite with hot reload; proxies /api to :4777
+```
+
+Open the Vite URL with `#token=dev` appended. End-to-end tests run against the built CLI with the locally installed Chrome (no browser download): `pnpm build && pnpm e2e`. Set `PW_CHANNEL=msedge` to use Edge instead.
+
 To try it in Claude Code without changing your installed version, point a throwaway `CLAUDE_CONFIG_DIR` at a test folder, or use `init --dry-run`.
 
 ## Layout
@@ -28,11 +39,13 @@ packages/
   pricing/              models.json + validator + lookup. Data only, no logic about tools.
   core/                 UsageEvent schema, cost engine, rolling-window estimator, config, formatting
   adapters/claude-code/ transcript discovery + parsing, status line input types
-  cli/                  `burnrate` binary: statusline, report, init/uninstall, config, doctor
+  cli/                  `burnrate` binary: statusline, report, init/uninstall, config, doctor, dashboard server
+apps/
+  dashboard/            React + Vite + Recharts UI, copied into the CLI's dist/ at build time
 docs/                   research notes, configuration reference, adapter guide
 ```
 
-Dependencies only point downward: `cli → adapters → core → pricing`. The CLI bundles everything into a single file with **no runtime dependencies**, because Claude Code runs it after every message.
+Dependencies only point downward: `cli → adapters → core → pricing`. The CLI bundles everything with **no runtime dependencies**, because Claude Code runs it after every message. The dashboard imports only `@burnrate/core/browser` (no Node APIs) and `@burnrate/pricing`, and must work offline: no CDNs, no web fonts from the network.
 
 ## Ground rules
 
