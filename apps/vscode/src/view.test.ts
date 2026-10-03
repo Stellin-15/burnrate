@@ -30,9 +30,9 @@ const local: LocalSummary = {
 describe("buildView", () => {
   it("shows real plan limits and today's cost, like the terminal meter", () => {
     const v = buildView(snapshot(), local, DEFAULT_CONFIG, { now: NOW });
-    expect(v.text).toBe("$(pulse) 5h 39% ↻ 2h16m │ 7d 37% │ $46.12 today");
+    expect(v.text).toBe("$(pulse) 5h 39% ↻ 2h16m │ 7d 37% ↻ 4d4h │ $46.12 today");
     expect(v.level).toBe("normal");
-    expect(v.tooltip).toContain("| **5-hour limit** | 39% used, resets in 2h16m |");
+    expect(v.tooltip).toContain("| **Session (5-hour)** | 39% used, resets in 2h16m |");
     expect(v.tooltip).toContain("| **Burn rate** | $6.25/h |");
     expect(v.tooltip).toContain("Plan limits from Claude Code");
     expect(v.tooltip).toContain("command:burnrate.openDashboard");

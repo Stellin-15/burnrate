@@ -21,10 +21,16 @@ export interface StatusView {
   /** Background emphasis for the status bar item. */
   level: "normal" | "warning" | "error";
   windows: WindowInfo[];
+  /** The same meter as plain text (no codicons), for places like a view header. */
+  headline: string;
+  /** One entry per line for list views (e.g. the BurnRate section in Claude Code's sidebar). */
+  rows: Array<{ id: string; label: string; value: string; level: "normal" | "warning" | "error" }>;
+  /** Shown when real plan limits are missing, explaining how to get them. */
+  hint?: string;
 }
 
 const SHORT = { fiveHour: "5h", sevenDay: "7d", spendLimit: "spend" } as const;
-const LONG = { fiveHour: "5-hour limit", sevenDay: "Weekly limit", spendLimit: "Spend limit" } as const;
+const LONG = { fiveHour: "Session (5-hour)", sevenDay: "Weekly", spendLimit: "Spend limit" } as const;
 
 /** Real limits from the status line snapshot; local estimates only when Claude Code reported none. */
 export function collectWindows(
@@ -80,8 +86,8 @@ export function buildView(
         : w.costUsd !== undefined
           ? money(w.costUsd)
           : "";
-    // Only the 5-hour window gets a countdown in the bar; the rest is in the tooltip.
-    const reset = w.id === "fiveHour" && w.resetsAt ? ` ↻ ${formatDuration(w.resetsAt - now)}` : "";
+    // Session and weekly limits both show when they reset; the spend limit's period is in the tooltip.
+    const reset = w.id !== "spendLimit" && w.resetsAt ? ` ↻ ${formatDuration(w.resetsAt - now)}` : "";
     return `${SHORT[w.id]} ${value}${reset}`;
   });
   if (opts.showTodayCost !== false && local) parts.push(`${money(local.todayCostUsd)} today`);
@@ -89,7 +95,42 @@ export function buildView(
   const worst = Math.max(-1, ...windows.map((w) => w.percent ?? -1));
   const level =
     worst >= config.thresholds.danger ? "error" : worst >= config.thresholds.warn ? "warning" : "normal";
-  const text = `$(pulse) ${parts.length ? parts.join(" │ ") : "BurnRate"}`;
+  const headline = parts.join(" │ ");
+  const text = `$(pulse) ${headline || "BurnRate"}`;
+  const levelOf = (pct?: number): StatusView["level"] =>
+    pct === undefined
+      ? "normal"
+      : pct >= config.thresholds.danger
+        ? "error"
+        : pct >= config.thresholds.warn
+          ? "warning"
+          : "normal";
+  const listRows: StatusView["rows"] = windows.map((w) => ({
+    id: w.id,
+    label: w.label,
+    value: `${w.percent !== undefined ? `${w.estimated ? "~" : ""}${Math.round(w.percent)}% used` : w.costUsd !== undefined ? `${money(w.costUsd)} spent` : ""}${w.resetsAt ? `, resets in ${formatDuration(w.resetsAt - now)}` : ""}`,
+    level: levelOf(w.percent),
+  }));
+  if (local) {
+    listRows.push({ id: "today", label: "Today", value: money(local.todayCostUsd), level: "normal" });
+    if (local.block && local.block.end > now && local.block.burnRatePerHour > 0)
+      listRows.push({
+        id: "burn",
+        label: "Burn rate",
+        value: `${money(local.block.burnRatePerHour)}/h`,
+        level: "normal",
+      });
+    listRows.push({
+      id: "week",
+      label: "Last 7 days",
+      value: money(local.sevenDay.costUsd),
+      level: "normal",
+    });
+  }
+  const hasRealLimits = windows.some((w) => !w.estimated && w.percent !== undefined);
+  const hint = hasRealLimits
+    ? undefined
+    : "Plan limits load when Claude Code runs in a terminal with the BurnRate status line. Open a terminal, run claude, and send a message.";
 
   // Tooltip: the full picture, plus where each number came from.
   const rows: string[] = ["| | |", "|:--|--:|"];
@@ -138,7 +179,7 @@ export function buildView(
     "[Open dashboard](command:burnrate.openDashboard) · [Refresh](command:burnrate.refresh)",
   ].join("\n");
 
-  return { text, tooltip, level, windows };
+  return { text, tooltip, level, windows, headline, rows: listRows, hint };
 }
 
 /**
