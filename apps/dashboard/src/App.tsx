@@ -1,8 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ApiError, createApi, readToken, type Meta, type Query, type Usage } from "./api";
+import {
+  ApiError,
+  createApi,
+  readToken,
+  type Limits,
+  type Meta,
+  type Query,
+  type Spend as SpendData,
+  type Usage,
+} from "./api";
 import { Calculator } from "./components/Calculator";
 import { DailyChart } from "./components/DailyChart";
 import { LineItems } from "./components/LineItems";
+import { PlanLimits } from "./components/PlanLimits";
+import { Spend } from "./components/Spend";
 import { Summary } from "./components/Summary";
 import { RANGES, rangeStart, type RangeId } from "./lib";
 
@@ -13,7 +24,7 @@ const sessionTime = new Intl.DateTimeFormat(undefined, {
   minute: "2-digit",
 });
 
-type Tab = "usage" | "calculator";
+type Tab = "usage" | "calculator" | "spend";
 
 const EXPORTS = [
   { view: "daily", label: "Daily spend" },
@@ -28,7 +39,7 @@ function readPrefs(): { range: RangeId; tab: Tab } {
     const p = JSON.parse(localStorage.getItem("burnrate-prefs") ?? "{}");
     return {
       range: RANGES.some((r) => r.id === p.range) ? p.range : "30d",
-      tab: p.tab === "calculator" ? "calculator" : "usage",
+      tab: p.tab === "calculator" || p.tab === "spend" ? p.tab : "usage",
     };
   } catch {
     return { range: "30d", tab: "usage" };
@@ -45,6 +56,8 @@ export function App() {
   const [model, setModel] = useState("");
   const [meta, setMeta] = useState<Meta>();
   const [usage, setUsage] = useState<Usage>();
+  const [spend, setSpend] = useState<SpendData>();
+  const [limits, setLimits] = useState<Limits>();
   const [error, setError] = useState<{ message: string; auth: boolean }>();
   const exportRef = useRef<HTMLDetailsElement>(null);
 
@@ -75,13 +88,23 @@ export function App() {
   useEffect(() => {
     if (!api) return;
     let live = true;
-    const load = () =>
+    const load = () => {
       api.usage(query).then((u) => {
         if (live) {
           setUsage(u);
           setError(undefined);
         }
       }, fail);
+      // Optional extras: older servers or no data just leave them empty.
+      api.limits().then(
+        (l) => live && setLimits(l),
+        () => undefined,
+      );
+      api.spend({ from: query.from }).then(
+        (x) => live && setSpend(x),
+        () => undefined,
+      );
+    };
     load();
     // New Claude Code activity shows up without a reload.
     const timer = setInterval(load, 30_000);
@@ -176,6 +199,9 @@ export function App() {
         >
           Cost calculator
         </button>
+        <button type="button" role="tab" aria-selected={tab === "spend"} onClick={() => setTab("spend")}>
+          API spend
+        </button>
       </nav>
 
       {error && (
@@ -194,6 +220,7 @@ export function App() {
           </div>
         ) : (
           <>
+            {limits && <PlanLimits limits={limits} />}
             <Summary usage={usage} currency={currency} from={from} />
             {usage.unpricedModels.length > 0 && (
               <p className="notice">
@@ -228,6 +255,8 @@ export function App() {
             </section>
           </>
         ))}
+
+      {tab === "spend" && <Spend spend={spend} currency={currency} />}
 
       {tab === "calculator" && (
         <Calculator key={range + project} api={api} usage={usage} query={query} currency={currency} />

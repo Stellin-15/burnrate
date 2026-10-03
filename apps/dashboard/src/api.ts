@@ -100,6 +100,8 @@ export function createApi(token: string) {
     meta: () => get<Meta>("meta"),
     usage: (q: Query) => get<Usage>("usage", q),
     pricing: () => get<PricingTable>("pricing"),
+    spend: (q: Query) => get<Spend>("spend", q),
+    limits: () => get<Limits>("limits"),
     whatIf: (q: Query & { target: string; only?: string }) => get<RepriceResult>("whatif", q),
     /** Fetch with the auth header, then hand the file to the browser's download. */
     async download(q: Query & { view: string; format: "csv" | "json" }) {
@@ -123,3 +125,25 @@ export type Query = {
   project?: string;
   model?: string;
 };
+
+export interface ReconcileRow {
+  key: string;
+  provider: "anthropic" | "openai";
+  reportedUsd: number;
+  computedUsd?: number;
+  differenceUsd?: number;
+  unpricedRows: number;
+}
+export interface Spend {
+  available: boolean;
+  providers?: string[];
+  daily?: Array<{ date: string; byProvider: Record<string, number> }>;
+  byDay?: ReconcileRow[];
+  byModel?: ReconcileRow[];
+  totalUsd?: number;
+  syncState?: Array<{ provider: string; lastSyncedAt: number; lastError?: string }>;
+}
+export interface Limits {
+  windows: Array<{ id: "fiveHour" | "sevenDay" | "spendLimit"; usedPercent: number; resetsAt: string }>;
+  observedAt?: string;
+}
