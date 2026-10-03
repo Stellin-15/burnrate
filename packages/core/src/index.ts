@@ -1,4 +1,5 @@
-export type { Adapter, UsageEvent } from "./types.js";
+export type { Adapter, ProviderCostRow, ProviderId, ProviderUsageRow, UsageEvent } from "./types.js";
+export { ProviderError, redactSecrets, requestJson, type RequestOptions } from "./http.js";
 export { costFromPricing, eventCost, totalTokens, type CostBreakdown } from "./cost.js";
 export {
   addToTotals,

@@ -36,3 +36,38 @@ export interface Adapter {
   /** Optional live updates. Returns an unsubscribe function. */
   watch?(onEvent: (e: UsageEvent) => void): () => void;
 }
+
+/** One time bucket of usage as a provider's own API reports it. */
+export interface ProviderUsageRow {
+  provider: ProviderId;
+  /** ISO start of the bucket (UTC). */
+  bucketStart: string;
+  bucketEnd: string;
+  model: string;
+  /** Workspace (Anthropic) or project (OpenAI) id; "" for the default/unknown. */
+  scope: string;
+  uncachedInputTokens: number;
+  cacheReadTokens: number;
+  /** Short-lived cache writes (Anthropic 5m, OpenAI 30m). */
+  cacheWriteTokens: number;
+  /** Long-lived cache writes (Anthropic 1h, OpenAI 12h). */
+  cacheWriteLongTokens: number;
+  outputTokens: number;
+  /** Request count when the provider reports it (OpenAI does; Anthropic doesn't). */
+  requests?: number;
+}
+
+/** One cost line as a provider bills it, in USD. */
+export interface ProviderCostRow {
+  provider: ProviderId;
+  bucketStart: string;
+  bucketEnd: string;
+  scope: string;
+  /** Provider's own label, e.g. "Claude Opus 5 Usage - Input Tokens" or "gpt-5, input". */
+  item: string;
+  model?: string;
+  amountUsd: number;
+}
+
+/** Providers whose usage/cost APIs BurnRate can sync. */
+export type ProviderId = "anthropic" | "openai";

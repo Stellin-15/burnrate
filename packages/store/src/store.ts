@@ -1,39 +1,9 @@
 import { mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { burnrateHome, type UsageEvent } from "@burnrate/core";
+import { burnrateHome, type ProviderCostRow, type ProviderUsageRow, type UsageEvent } from "@burnrate/core";
+
+export type { ProviderCostRow, ProviderUsageRow };
 import { openDatabase, type DatabaseSync } from "./sqlite.js";
-
-/** One time bucket of usage as a provider's own API reports it. */
-export interface ProviderUsageRow {
-  provider: "anthropic" | "openai";
-  /** ISO start of the bucket (UTC). */
-  bucketStart: string;
-  bucketEnd: string;
-  model: string;
-  /** Workspace (Anthropic) or project (OpenAI) id; "" for the default/unknown. */
-  scope: string;
-  uncachedInputTokens: number;
-  cacheReadTokens: number;
-  /** Short-lived cache writes (Anthropic 5m, OpenAI 30m). */
-  cacheWriteTokens: number;
-  /** Long-lived cache writes (Anthropic 1h, OpenAI 12h). */
-  cacheWriteLongTokens: number;
-  outputTokens: number;
-  /** Request count when the provider reports it (OpenAI does; Anthropic doesn't). */
-  requests?: number;
-}
-
-/** One cost line as a provider bills it, in USD. */
-export interface ProviderCostRow {
-  provider: "anthropic" | "openai";
-  bucketStart: string;
-  bucketEnd: string;
-  scope: string;
-  /** Provider's own label, e.g. "Claude Opus 5 Usage - Input Tokens" or "gpt-5, input". */
-  item: string;
-  model?: string;
-  amountUsd: number;
-}
 
 const SCHEMA_VERSION = 1;
 
