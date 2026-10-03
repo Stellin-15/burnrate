@@ -50,3 +50,17 @@ export {
   visibleLength,
   type CurrencyConfig,
 } from "./format.js";
+export {
+  compareModels,
+  repriceEvents,
+  type ModelQuote,
+  type RepriceResult,
+  type Workload,
+} from "./calculator.js";
+export {
+  BUDGET_PERIODS,
+  budgetStatus,
+  type BudgetPeriod,
+  type BudgetStatus,
+  type Budgets,
+} from "./budgets.js";
