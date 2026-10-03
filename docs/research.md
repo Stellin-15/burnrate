@@ -74,8 +74,25 @@ Source: https://platform.claude.com/docs/en/about-claude/pricing
 - API used: `DatabaseSync`, `prepare().run/get/all`, `exec`. Schema versions tracked with `PRAGMA user_version`; WAL mode plus `busy_timeout` because the dashboard, `report`, and `sync` may open the file at the same time.
 - The status line never opens the database, so its speed is unaffected.
 
+## Anthropic Usage & Cost Admin API
+
+Source: https://platform.claude.com/docs/en/manage-claude/usage-cost-api and the API reference pages for `usage_report/messages` and `cost_report`.
+
+- Needs an Admin API key (`sk-ant-admin01-…`), an `org:admin` OAuth token, or an organization-wide key. **Individual accounts can't use the Admin API.** Claude Enterprise uses a separate Analytics API (not supported yet).
+- `GET /v1/organizations/usage_report/messages` with `x-api-key` and `anthropic-version: 2023-06-01`. `starting_at`/`ending_at` are RFC 3339; `bucket_width` is 1d (max 31 buckets per page), 1h (168), or 1m (1440). `group_by[]` includes `model` and `workspace_id`. Result fields: `uncached_input_tokens`, `cache_read_input_tokens`, `cache_creation.ephemeral_5m_input_tokens`, `cache_creation.ephemeral_1h_input_tokens`, `output_tokens`, `server_tool_use.web_search_requests`. No request counts.
+- `GET /v1/organizations/cost_report`: daily only, max 31 buckets per page. **`amount` is a decimal string in cents** (`"123.45"` is $1.23). Grouping by `description` adds `model`, `token_type`, and `cost_type` (tokens, web_search, code_execution, session_usage). Priority Tier costs are not included.
+- Pagination: `has_more` plus `next_page`, passed back as `page`. Data appears within about 5 minutes; polling once a minute is fine.
+
+## OpenAI organization Usage and Costs APIs
+
+Source: the official OpenAPI spec at github.com/openai/openai-openapi (`openapi.json`). The docs site blocks automated fetches.
+
+- Admin key (`sk-admin-…`) sent as `Authorization: Bearer`.
+- `GET /v1/organization/usage/completions`: `start_time`/`end_time` in **Unix seconds**, `bucket_width` 1m/1h/1d (1d max 31 per page), `group_by` includes `model` and `project_id`. **`input_tokens` includes cached and cache-write tokens**; `input_cached_tokens`, `input_cache_write_tokens` (30-minute), `input_cache_write_12h_tokens`, and `input_uncached_tokens` break it down. `num_model_requests` gives request counts.
+- `GET /v1/organization/costs`: daily only, `limit` up to 180. `amount.value` is a number in `amount.currency` (lowercase ISO code). Grouping by `line_item` gives labels like `"gpt-5-2025-08-07, input"`.
+
 ## Not yet researched (later phases)
 
-- Anthropic Admin API usage and cost endpoints (Phase 3)
-- OpenAI organization usage and costs endpoints (Phase 3)
+- OpenAI model prices (needed for "at list price" on OpenAI rows)
+- Google (Gemini) usage: no simple usage API; cost data comes through a Cloud Billing export to BigQuery
 - Codex CLI, Gemini CLI, OpenCode, and Aider log locations and formats (Phase 4)

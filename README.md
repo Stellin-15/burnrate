@@ -116,6 +116,31 @@ _Screenshots use synthetic demo data._
 
 The dashboard binds to `127.0.0.1` only. Each run prints a link with a one-time token, and the page can't load data without it, so other websites and other users on your network can't read your usage. Options: `--port <n>`, `--no-open`.
 
+## API spend (Anthropic and OpenAI organizations)
+
+If you pay for the API through an organization, BurnRate can pull what you were actually billed and compare it with list prices:
+
+```sh
+burnrate keys add anthropic   # paste an Admin key (sk-ant-admin01-…); loads the last 30 days
+burnrate keys add openai      # paste an Admin key (sk-admin-…)
+burnrate spend                # billed vs. list price, per day
+burnrate spend --by model
+burnrate sync                 # refresh (also --days 90, or one provider)
+```
+
+Example output:
+
+```
+Date (UTC)  Provider   Billed  At list price    Difference
+2026-10-01  Anthropic  $32.50         $34.00  −$1.50 (−4%)
+2026-10-01  OpenAI     $11.25                     unpriced
+```
+
+- **You need an organization Admin key.** Regular API keys can't read usage, and Anthropic doesn't offer Admin keys to individual accounts. Create one in the [Claude Console](https://platform.claude.com/settings/admin-keys) or [OpenAI settings](https://platform.openai.com/settings/organization/admin-keys).
+- **Keys live in your OS keychain** (macOS Keychain, Windows Credential Manager, or Linux Secret Service), never in a file. BurnRate checks a key with a real request before saving it. You can also set `ANTHROPIC_ADMIN_KEY` or `OPENAI_ADMIN_KEY` instead, for example in CI.
+- **"Difference"** is billed minus list price for the same tokens. Small gaps are normal (discounts, batch, data residency, web search). OpenAI rows show "unpriced" because BurnRate's pricing table only covers Claude models so far.
+- `burnrate keys list` shows which keys are set (masked) and when each provider last synced. `burnrate keys remove anthropic` deletes a key.
+
 ## Configuration
 
 Optional. Create a config file with defaults:
@@ -151,13 +176,16 @@ Every option, with examples (custom limits, other currencies, extra data dirs), 
 | `burnrate uninstall claude-code`               | Remove the meter and restore your previous status line               |
 | `burnrate report [view]`                       | Usage and cost tables                                                |
 | `burnrate dashboard`                           | Local web dashboard, budgets, and cost calculator                    |
+| `burnrate keys add\|remove\|test <provider>`   | Manage Admin API keys (OS keychain)                                  |
+| `burnrate sync`, `burnrate spend`              | Pull billed cost from provider APIs; compare it with list prices     |
 | `burnrate statusline --demo [--theme <name>]`  | Preview the meter                                                    |
 | `burnrate config [show\|path\|init\|validate]` | Manage the config file                                               |
 | `burnrate doctor`                              | Check Node, Claude Code data, the installed status line, and pricing |
 
 ## Privacy
 
-- BurnRate makes **no network requests**. The dashboard's fonts and scripts are bundled; it talks only to the local `burnrate dashboard` process.
+- BurnRate makes **no network requests unless you add an API key**. Then it contacts only that provider (api.anthropic.com or api.openai.com), and only when you run `keys add`, `keys test`, or `sync`. The status line never goes online. The dashboard's fonts and scripts are bundled.
+- Admin keys are stored in your OS keychain and masked in everything BurnRate prints.
 - It reads Claude Code's transcripts under `~/.claude/projects` (or `CLAUDE_CONFIG_DIR`) and keeps only token counts, model ids, timestamps, and project paths. It never stores message content.
 - Its own files live in `~/.burnrate/` (override with `BURNRATE_HOME`): your config, a small cache, an error log, and `burnrate.db`, a history of the same token counts so reports reach back further than Claude Code keeps transcripts (30 days by default). Delete the folder at any time.
 - `init` touches exactly one key, `statusLine`, in Claude Code's settings, and saves a timestamped backup next to the file first.
