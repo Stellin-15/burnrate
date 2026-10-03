@@ -130,10 +130,19 @@ export function buildUsage(all: UsageEvent[], q: UsageQuery, config: BurnrateCon
     row.byModel[s] = (row.byModel[s] ?? 0) + cost;
   }
 
+  // What cache hits saved versus paying the full input price for the same tokens.
+  let cacheSavingsUsd = 0;
+  for (const e of events) {
+    const p = findModelPricing(e.model);
+    if (p && e.cacheReadTokens)
+      cacheSavingsUsd += (e.cacheReadTokens * (p.prices.input - p.prices.cacheRead)) / 1e6;
+  }
+
   const unpriced = [...new Set(events.map((e) => e.model))].filter((m) => !findModelPricing(m));
   return {
     range: { from: q.from?.toISOString(), to: q.to?.toISOString() },
     totals,
+    cacheSavingsUsd,
     series: [
       ...series.map((id) => ({ id, label: modelLabel(id) })),
       ...(hasOther ? [{ id: "other", label: "Other models" }] : []),
@@ -145,7 +154,14 @@ export function buildUsage(all: UsageEvent[], q: UsageQuery, config: BurnrateCon
     ),
     sessions: groupBy(events, (e) => e.sessionId ?? "(unknown)")
       .slice(0, 20)
-      .map(([k, t]) => totalsRow(k, k.slice(0, 8), t)),
+      .map(([k, t]) => {
+        // Events are time-ordered, so the first match is when the session started.
+        const first = events.find((e) => (e.sessionId ?? "(unknown)") === k);
+        return {
+          ...totalsRow(k, first?.project ? projectName(first.project) : "(unknown project)", t),
+          startedAt: first?.timestamp,
+        };
+      }),
     budgets: budgetStatus(all, config.budgets, now).map((b) => ({
       ...b,
       periodStart: b.periodStart.toISOString(),
@@ -326,7 +342,7 @@ export function createDashboardServer(opts: DashboardOptions): Server {
         body = await readFile(file);
       }
       const type = MIME[extname(file)] ?? "application/octet-stream";
-      const csp =
+      const csp: Record<string, string> =
         extname(file) === ".html"
           ? {
               "content-security-policy":
