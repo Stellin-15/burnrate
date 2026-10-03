@@ -1,0 +1,314 @@
+{
+  "version": 1,
+  "updatedAt": "2026-10-03",
+  "currency": "USD",
+  "unit": "USD per 1M tokens",
+  "models": [
+    {
+      "id": "claude-fable-5-1",
+      "provider": "anthropic",
+      "displayName": "Claude Fable 5.1",
+      "status": "active",
+      "prices": {
+        "input": 10,
+        "output": 50,
+        "cacheWrite5m": 12.5,
+        "cacheWrite1h": 20,
+        "cacheRead": 0.25
+      },
+      "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "updatedAt": "2026-10-03"
+    },
+    {
+      "id": "claude-mythos-5-1",
+      "provider": "anthropic",
+      "displayName": "Claude Mythos 5.1",
+      "status": "limited",
+      "prices": {
+        "input": 10,
+        "output": 50,
+        "cacheWrite5m": 12.5,
+        "cacheWrite1h": 20,
+        "cacheRead": 0.25
+      },
+      "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "updatedAt": "2026-10-03"
+    },
+    {
+      "id": "claude-fable-5",
+      "provider": "anthropic",
+      "displayName": "Claude Fable 5",
+      "status": "active",
+      "prices": {
+        "input": 10,
+        "output": 50,
+        "cacheWrite5m": 12.5,
+        "cacheWrite1h": 20,
+        "cacheRead": 1
+      },
+      "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "updatedAt": "2026-10-03"
+    },
+    {
+      "id": "claude-mythos-5",
+      "provider": "anthropic",
+      "displayName": "Claude Mythos 5",
+      "status": "limited",
+      "prices": {
+        "input": 10,
+        "output": 50,
+        "cacheWrite5m": 12.5,
+        "cacheWrite1h": 20,
+        "cacheRead": 1
+      },
+      "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "updatedAt": "2026-10-03"
+    },
+    {
+      "id": "claude-opus-5-5",
+      "provider": "anthropic",
+      "displayName": "Claude Opus 5.5",
+      "status": "active",
+      "prices": {
+        "input": 4,
+        "output": 20,
+        "cacheWrite5m": 5,
+        "cacheWrite1h": 8,
+        "cacheRead": 0.2
+      },
+      "fastModePrices": {
+        "input": 8,
+        "output": 40
+      },
+      "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "updatedAt": "2026-10-03"
+    },
+    {
+      "id": "claude-opus-5",
+      "provider": "anthropic",
+      "displayName": "Claude Opus 5",
+      "status": "active",
+      "prices": {
+        "input": 5,
+        "output": 25,
+        "cacheWrite5m": 6.25,
+        "cacheWrite1h": 10,
+        "cacheRead": 0.5
+      },
+      "fastModePrices": {
+        "input": 10,
+        "output": 50
+      },
+      "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "updatedAt": "2026-10-03"
+    },
+    {
+      "id": "claude-opus-4-8",
+      "provider": "anthropic",
+      "displayName": "Claude Opus 4.8",
+      "status": "active",
+      "prices": {
+        "input": 5,
+        "output": 25,
+        "cacheWrite5m": 6.25,
+        "cacheWrite1h": 10,
+        "cacheRead": 0.5
+      },
+      "fastModePrices": {
+        "input": 10,
+        "output": 50
+      },
+      "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "updatedAt": "2026-10-03"
+    },
+    {
+      "id": "claude-opus-4-7",
+      "provider": "anthropic",
+      "displayName": "Claude Opus 4.7",
+      "status": "active",
+      "prices": {
+        "input": 5,
+        "output": 25,
+        "cacheWrite5m": 6.25,
+        "cacheWrite1h": 10,
+        "cacheRead": 0.5
+      },
+      "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "updatedAt": "2026-10-03"
+    },
+    {
+      "id": "claude-opus-4-6",
+      "provider": "anthropic",
+      "displayName": "Claude Opus 4.6",
+      "status": "active",
+      "prices": {
+        "input": 5,
+        "output": 25,
+        "cacheWrite5m": 6.25,
+        "cacheWrite1h": 10,
+        "cacheRead": 0.5
+      },
+      "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "updatedAt": "2026-10-03"
+    },
+    {
+      "id": "claude-opus-4-5",
+      "provider": "anthropic",
+      "displayName": "Claude Opus 4.5",
+      "status": "active",
+      "prices": {
+        "input": 5,
+        "output": 25,
+        "cacheWrite5m": 6.25,
+        "cacheWrite1h": 10,
+        "cacheRead": 0.5
+      },
+      "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "updatedAt": "2026-10-03"
+    },
+    {
+      "id": "claude-opus-4-1",
+      "provider": "anthropic",
+      "displayName": "Claude Opus 4.1",
+      "status": "retired",
+      "prices": {
+        "input": 15,
+        "output": 75,
+        "cacheWrite5m": 18.75,
+        "cacheWrite1h": 30,
+        "cacheRead": 1.5
+      },
+      "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "updatedAt": "2026-10-03"
+    },
+    {
+      "id": "claude-opus-4",
+      "provider": "anthropic",
+      "displayName": "Claude Opus 4",
+      "status": "retired",
+      "prices": {
+        "input": 15,
+        "output": 75,
+        "cacheWrite5m": 18.75,
+        "cacheWrite1h": 30,
+        "cacheRead": 1.5
+      },
+      "aliases": [
+        "claude-opus-4-0"
+      ],
+      "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "updatedAt": "2026-10-03"
+    },
+    {
+      "id": "claude-sonnet-5-5",
+      "provider": "anthropic",
+      "displayName": "Claude Sonnet 5.5",
+      "status": "active",
+      "prices": {
+        "input": 2,
+        "output": 10,
+        "cacheWrite5m": 2.5,
+        "cacheWrite1h": 4,
+        "cacheRead": 0.2
+      },
+      "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "updatedAt": "2026-10-03"
+    },
+    {
+      "id": "claude-sonnet-5",
+      "provider": "anthropic",
+      "displayName": "Claude Sonnet 5",
+      "status": "active",
+      "prices": {
+        "input": 2,
+        "output": 10,
+        "cacheWrite5m": 2.5,
+        "cacheWrite1h": 4,
+        "cacheRead": 0.2
+      },
+      "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "updatedAt": "2026-10-03"
+    },
+    {
+      "id": "claude-sonnet-4-6",
+      "provider": "anthropic",
+      "displayName": "Claude Sonnet 4.6",
+      "status": "active",
+      "prices": {
+        "input": 3,
+        "output": 15,
+        "cacheWrite5m": 3.75,
+        "cacheWrite1h": 6,
+        "cacheRead": 0.3
+      },
+      "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "updatedAt": "2026-10-03"
+    },
+    {
+      "id": "claude-sonnet-4-5",
+      "provider": "anthropic",
+      "displayName": "Claude Sonnet 4.5",
+      "status": "active",
+      "prices": {
+        "input": 3,
+        "output": 15,
+        "cacheWrite5m": 3.75,
+        "cacheWrite1h": 6,
+        "cacheRead": 0.3
+      },
+      "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "updatedAt": "2026-10-03"
+    },
+    {
+      "id": "claude-sonnet-4",
+      "provider": "anthropic",
+      "displayName": "Claude Sonnet 4",
+      "status": "retired",
+      "prices": {
+        "input": 3,
+        "output": 15,
+        "cacheWrite5m": 3.75,
+        "cacheWrite1h": 6,
+        "cacheRead": 0.3
+      },
+      "aliases": [
+        "claude-sonnet-4-0"
+      ],
+      "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "updatedAt": "2026-10-03"
+    },
+    {
+      "id": "claude-haiku-4-5",
+      "provider": "anthropic",
+      "displayName": "Claude Haiku 4.5",
+      "status": "active",
+      "prices": {
+        "input": 1,
+        "output": 5,
+        "cacheWrite5m": 1.25,
+        "cacheWrite1h": 2,
+        "cacheRead": 0.1
+      },
+      "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "updatedAt": "2026-10-03"
+    },
+    {
+      "id": "claude-3-5-haiku",
+      "provider": "anthropic",
+      "displayName": "Claude Haiku 3.5",
+      "status": "retired",
+      "prices": {
+        "input": 0.8,
+        "output": 4,
+        "cacheWrite5m": 1,
+        "cacheWrite1h": 1.6,
+        "cacheRead": 0.08
+      },
+      "aliases": [
+        "claude-haiku-3-5"
+      ],
+      "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "updatedAt": "2026-10-03"
+    }
+  ]
+}
