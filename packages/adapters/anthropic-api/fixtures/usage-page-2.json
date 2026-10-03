@@ -1,0 +1,11 @@
+{
+  "data": [
+    {
+      "starting_at": "2026-09-02T00:00:00Z",
+      "ending_at": "2026-09-03T00:00:00Z",
+      "results": []
+    }
+  ],
+  "has_more": false,
+  "next_page": null
+}
