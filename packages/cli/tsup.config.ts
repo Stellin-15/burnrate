@@ -6,7 +6,7 @@ export default defineConfig({
   entry: { cli: "src/index.ts" },
   format: ["esm"],
   platform: "node",
-  target: "node20",
+  target: "node22",
   bundle: true,
   noExternal: [/^@burnrate\//],
   minify: false,

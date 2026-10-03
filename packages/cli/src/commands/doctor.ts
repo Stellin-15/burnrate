@@ -20,7 +20,7 @@ export async function runDoctor(): Promise<number> {
 
   console.log("Environment");
   const major = Number(process.versions.node.split(".")[0]);
-  (major >= 20 ? ok : bad)(`Node ${process.versions.node}${major >= 20 ? "" : " (BurnRate needs Node 20+)"}`);
+  (major >= 22 ? ok : bad)(`Node ${process.versions.node}${major >= 22 ? "" : " (BurnRate needs Node 22+)"}`);
   ok(`BurnRate data dir: ${burnrateHome()}`);
 
   console.log("\nConfig");
