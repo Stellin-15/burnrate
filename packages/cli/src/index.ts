@@ -8,6 +8,7 @@ Usage
   burnrate init claude-code [--dry-run] [--force]   Add the meter to Claude Code's status line
   burnrate uninstall claude-code                     Remove it (restores any previous status line)
   burnrate report [view] [options]                   Usage and cost tables
+  burnrate dashboard [--port <n>] [--no-open]        Local web dashboard and cost calculator
   burnrate statusline                                Render the meter (Claude Code runs this)
   burnrate statusline --demo [--theme <name>]        Preview the meter with sample data
   burnrate config [show|path|init|validate]          Manage ~/.burnrate/config.json
@@ -47,6 +48,8 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
       "dry-run": { type: "boolean" },
       command: { type: "string" },
       refresh: { type: "string" },
+      port: { type: "string" },
+      "no-open": { type: "boolean" },
     },
   });
   const [cmd, sub] = positionals;
@@ -106,6 +109,15 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
     case "uninstall": {
       const { runUninstall } = await import("./commands/init.js");
       return runUninstall({ tool: sub });
+    }
+    case "dashboard": {
+      const port = str(values.port) ? Number(values.port) : undefined;
+      if (port !== undefined && !(Number.isInteger(port) && port > 0 && port < 65536)) {
+        console.error("--port must be a number from 1 to 65535");
+        return 2;
+      }
+      const { runDashboard } = await import("./commands/dashboard.js");
+      return runDashboard({ port, open: !values["no-open"] });
     }
     case "config": {
       const { runConfig } = await import("./commands/config.js");
