@@ -1,0 +1,78 @@
+{
+  "name": "burnrate-vscode",
+  "displayName": "BurnRate",
+  "description": "Your Claude Code usage limits and today's cost in the VS Code status bar. Local-only.",
+  "version": "0.1.0",
+  "publisher": "burnrate",
+  "license": "MIT",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Stellin-15/burnrate"
+  },
+  "engines": {
+    "vscode": "^1.94.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "claude",
+    "claude code",
+    "usage",
+    "limits",
+    "cost"
+  ],
+  "icon": "media/icon.png",
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "burnrate.openDashboard",
+        "title": "Open Dashboard",
+        "category": "BurnRate"
+      },
+      {
+        "command": "burnrate.refresh",
+        "title": "Refresh",
+        "category": "BurnRate"
+      }
+    ],
+    "configuration": {
+      "title": "BurnRate",
+      "properties": {
+        "burnrate.refreshSeconds": {
+          "type": "number",
+          "default": 30,
+          "minimum": 5,
+          "description": "How often to re-read usage, in seconds. Plan limits also update as soon as Claude Code reports new ones."
+        },
+        "burnrate.showTodayCost": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show today's Claude Code cost (API list-price equivalent) in the status bar."
+        },
+        "burnrate.dashboardCommand": {
+          "type": "string",
+          "default": "",
+          "description": "Command that starts the dashboard, e.g. \"burnrate dashboard\". Leave empty to use the BurnRate install that `burnrate init claude-code` set up."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc -p tsconfig.json",
+    "package": "pnpm run build && vsce package --no-dependencies --out burnrate-vscode.vsix"
+  },
+  "devDependencies": {
+    "@burnrate/adapter-claude-code": "workspace:*",
+    "@burnrate/core": "workspace:*",
+    "@burnrate/pricing": "workspace:*",
+    "@types/vscode": "~1.94.0",
+    "@vscode/vsce": "^4.0.0"
+  }
+}
