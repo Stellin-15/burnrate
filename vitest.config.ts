@@ -11,6 +11,8 @@ export default defineConfig({
       "@burnrate/pricing": src("./packages/pricing/src/index.ts"),
       "@burnrate/adapter-claude-code": src("./packages/adapters/claude-code/src/index.ts"),
       "@burnrate/store": src("./packages/store/src/index.ts"),
+      "@burnrate/adapter-anthropic-api": src("./packages/adapters/anthropic-api/src/index.ts"),
+      "@burnrate/adapter-openai-api": src("./packages/adapters/openai-api/src/index.ts"),
     },
   },
   test: {
