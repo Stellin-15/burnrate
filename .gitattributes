@@ -1,2 +1,6 @@
 # Auto detect text files and perform LF normalization
-* text=auto
+* text=auto eol=lf
+*.jsonl text eol=lf
+
+# Fixtures that test CRLF handling must keep their line endings
+packages/adapters/*/fixtures/*-crlf.* -text
