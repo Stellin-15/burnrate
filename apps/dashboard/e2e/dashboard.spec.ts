@@ -78,3 +78,23 @@ test("exports CSV", async ({ page }) => {
     "key,label,requests,inputTokens,outputTokens,cacheReadTokens,cacheWriteTokens,costUsd",
   );
 });
+
+test("shows real Claude plan limits from the status line snapshot", async ({ page }) => {
+  await open(page);
+  const limits = page.getByRole("region", { name: "Claude plan limits" });
+  await expect(limits).toContainText("5-hour limit");
+  await expect(limits).toContainText("39% used");
+  await expect(limits).toContainText("Weekly limit");
+});
+
+test("API spend tab compares billed cost with list price", async ({ page }) => {
+  await open(page);
+  await page.getByRole("tab", { name: "API spend" }).click();
+  // 10 days x ($32 Anthropic + $11.25 OpenAI)
+  await expect(page.locator(".total-figure")).toHaveText("$432.50");
+  const table = page.getByRole("table", { name: "Billed and list-price cost per model" });
+  // Opus 5.5 per day at list price: $4 + $2 + $8 + $20 = $34; billed $32 -> -$2 (-6%) per day
+  await expect(table.getByRole("row", { name: /Opus 5.5/ })).toContainText("$340.00");
+  await expect(table.getByRole("row", { name: /Opus 5.5/ })).toContainText("−$20.00 (−6%)");
+  await expect(table.getByRole("row", { name: /gpt-5/ })).toContainText("no list price");
+});
