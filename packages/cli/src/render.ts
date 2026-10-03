@@ -28,6 +28,8 @@ export interface WindowView {
   percent?: number;
   /** True when percent is BurnRate's estimate rather than the tool's own number. */
   estimated?: boolean;
+  /** True when the reset time is BurnRate's guess (no real reading from Claude Code for this window). */
+  resetEstimated?: boolean;
   /** Epoch ms. */
   resetsAt?: number;
   /** Projected ms until the limit is reached, if before reset. */
@@ -79,7 +81,7 @@ export function renderStatusLine(m: StatusModel, opts: RenderOptions): string {
     if (withBar) parts.push(paint(c, bar(w.percent, config.barWidth, plain)));
     parts.push(paint(c, pct));
     if (w.resetsAt !== undefined && w.resetsAt > now)
-      parts.push(label(`${resetIcon}${formatDuration(w.resetsAt - now)}`));
+      parts.push(label(`${resetIcon}${w.resetEstimated ? "~" : ""}${formatDuration(w.resetsAt - now)}`));
     if (w.msToLimit !== undefined)
       parts.push(paint("red", `${warnIcon} limit in ${formatDuration(w.msToLimit)}`));
     return parts.join(" ");

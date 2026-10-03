@@ -9,6 +9,8 @@ export interface WindowInfo {
   percent?: number;
   /** True when BurnRate estimated it from your configured limits rather than Claude Code reporting it. */
   estimated?: boolean;
+  /** True when the reset time is BurnRate's guess (no real reading from Claude Code for this window). */
+  resetEstimated?: boolean;
   resetsAt?: number;
   costUsd?: number;
 }
@@ -54,6 +56,7 @@ export function collectWindows(
       label: LONG.fiveHour,
       ...(est ? { percent: est.usedPercent, estimated: true } : { costUsd: local.block.costUsd }),
       resetsAt: local.block.end,
+      resetEstimated: true,
     });
   }
   if (!out.some((w) => w.id === "sevenDay") && local?.sevenDay.estimate) {
@@ -98,7 +101,10 @@ export function buildView(
           ? money(w.costUsd)
           : "";
     // Session and weekly limits both show when they reset; the spend limit's period is in the tooltip.
-    const reset = w.id !== "spendLimit" && w.resetsAt ? ` ↻ ${formatDuration(w.resetsAt - now)}` : "";
+    const reset =
+      w.id !== "spendLimit" && w.resetsAt
+        ? ` ↻ ${w.resetEstimated ? "~" : ""}${formatDuration(w.resetsAt - now)}`
+        : "";
     return `${SHORT[w.id]} ${value}${reset}`;
   });
   if (opts.showTodayCost !== false && local) parts.push(`${money(local.todayCostUsd)} today`);
@@ -119,7 +125,7 @@ export function buildView(
   const listRows: StatusView["rows"] = windows.map((w) => ({
     id: w.id,
     label: w.label,
-    value: `${w.percent !== undefined ? `${w.estimated ? "~" : ""}${Math.round(w.percent)}% used` : w.costUsd !== undefined ? `${money(w.costUsd)} spent` : ""}${w.resetsAt ? `, resets in ${formatDuration(w.resetsAt - now)}` : ""}`,
+    value: `${w.percent !== undefined ? `${w.estimated ? "~" : ""}${Math.round(w.percent)}% used` : w.costUsd !== undefined ? `${money(w.costUsd)} spent` : ""}${w.resetsAt ? `, resets in ${w.resetEstimated ? "about " : ""}${formatDuration(w.resetsAt - now)}` : ""}`,
     level: levelOf(w.percent),
   }));
   if (local) {
@@ -152,7 +158,9 @@ export function buildView(
         : w.costUsd !== undefined
           ? `${money(w.costUsd)} spent`
           : "";
-    const reset = w.resetsAt ? `, resets in ${formatDuration(w.resetsAt - now)}` : "";
+    const reset = w.resetsAt
+      ? `, resets in ${w.resetEstimated ? "about " : ""}${formatDuration(w.resetsAt - now)}`
+      : "";
     rows.push(`| **${w.label}** | ${value}${reset} |`);
   }
   if (local) {
@@ -180,6 +188,10 @@ export function buildView(
       "Plan limits appear after Claude Code runs in a terminal with the BurnRate status line installed (`burnrate init claude-code`). The chat panel doesn't report them.",
     );
   }
+  if (windows.some((w) => w.resetEstimated))
+    notes.push(
+      'Reset times marked "~" are estimates: Anthropic tracks your 5-hour window across all Claude apps (web, desktop, mobile), and BurnRate only sees Claude Code on this computer. Run Claude Code in a terminal for the exact time.',
+    );
   if (windows.some((w) => w.estimated && !live.includes(w)))
     notes.push("`~` marks estimates from the limits in your BurnRate config.");
   if (local)

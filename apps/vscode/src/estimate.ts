@@ -106,6 +106,7 @@ export function liveWindows(
               percent: (block.totals.costUsd / limit) * 100,
               estimated: true,
               resetsAt: block.end.getTime(),
+              resetEstimated: true,
             }
           : { id, label: LABEL[id], percent: 0, estimated: true },
       );
@@ -119,6 +120,7 @@ export function liveWindows(
         percent: (costBetween(events, start, now + 1) / limit) * 100,
         estimated: true,
         resetsAt: start + SEVEN_DAYS,
+        resetEstimated: true,
       });
     }
   }

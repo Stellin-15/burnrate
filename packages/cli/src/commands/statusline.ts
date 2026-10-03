@@ -76,8 +76,14 @@ export function buildStatusModel(
   if (!m.fiveHour && local?.block) {
     const b = local.block;
     m.fiveHour = b.estimate
-      ? { percent: b.estimate.usedPercent, estimated: true, resetsAt: b.end, msToLimit: b.estimate.msToLimit }
-      : { costUsd: b.costUsd, resetsAt: b.end };
+      ? {
+          percent: b.estimate.usedPercent,
+          estimated: true,
+          resetsAt: b.end,
+          resetEstimated: true,
+          msToLimit: b.estimate.msToLimit,
+        }
+      : { costUsd: b.costUsd, resetsAt: b.end, resetEstimated: true };
   }
   if (!m.sevenDay && local) {
     const est = local.sevenDay.estimate;
