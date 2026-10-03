@@ -1,0 +1,25 @@
+{
+  "name": "@burnrate/pricing",
+  "version": "0.1.0",
+  "description": "Versioned, community-editable AI model pricing table used by BurnRate.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    },
+    "./models.json": "./models.json"
+  },
+  "files": [
+    "dist",
+    "models.json"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "validate": "node --experimental-strip-types --no-warnings scripts/validate.ts"
+  }
+}
