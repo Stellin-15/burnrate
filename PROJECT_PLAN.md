@@ -9,7 +9,16 @@ Alternate names if taken: `tokenmeter`, `spendline`, `gaugecode`, `limitlight`
 
 ## 0. Status and decisions (updated 2026-10-03)
 
-**Phase 0 and Phase 1 are built.** `burnrate init claude-code` adds a live meter to Claude Code, and `burnrate report` gives cost tables. 116 tests pass, along with lint, format, typecheck, and pricing validation. How to use it: [README.md](README.md). What external formats it relies on: [docs/research.md](docs/research.md).
+**Phases 0, 1 and 2 are built.** `burnrate init claude-code` adds a live meter to Claude Code, `burnrate report` gives cost tables, and `burnrate dashboard` serves a local web dashboard with budgets, a model cost calculator, "what if" re-pricing, and CSV/JSON export. 141 unit tests and 7 browser end-to-end tests pass, along with lint, format, typecheck, and pricing validation. How to use it: [README.md](README.md). What external formats it relies on: [docs/research.md](docs/research.md).
+
+### Phase 2 notes
+
+- **Done-when check:** the dashboard shows real local data (served from the same transcript loader as `report`), and an end-to-end test checks that the calculator UI shows hand-checked numbers: Sonnet 5.5 $90/month, Haiku 4.5 $45, Opus 5.5 $180 for 10k input + 1k output tokens per request × 100 requests/day.
+- **Built without a database.** The dashboard reads transcripts through the same incremental cache, so history is still limited by Claude Code's 30-day transcript retention. **The SQLite decision below is still open.**
+- **Security:** the server binds to 127.0.0.1, rejects non-loopback `Host` headers (DNS rebinding), needs a per-run token passed in the URL fragment, is GET-only, sends no CORS headers, and serves the UI with a strict CSP.
+- **Offline:** fonts (Archivo, OFL) and all scripts are bundled; the page makes no third-party requests.
+- **E2E tests** use Playwright with the locally installed Chrome (no browser download) against seeded synthetic data (`apps/dashboard/e2e/seed.mjs`).
+- **Added beyond the plan:** "saved by caching" figure, budget pace projection, and the calculator can start from your real average request.
 
 ### What research changed
 
