@@ -2,9 +2,11 @@ import { existsSync, readFileSync, watch, type FSWatcher } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import * as vscode from "vscode";
-import { burnrateHome, loadConfig } from "@burnrate/core";
+import { SEVEN_DAYS, burnrateHome, loadConfig } from "@burnrate/core";
+import { claudeConfigDirs, loadClaudeCodeEvents } from "@burnrate/adapter-claude-code";
 import type { StatusSnapshot } from "../../../packages/cli/src/snapshot.js";
-import { getLocalSummary, readJson } from "../../../packages/cli/src/summary.js";
+import { getLocalSummary, readJson, writeJsonQuiet } from "../../../packages/cli/src/summary.js";
+import { calibrate, liveWindows, type Calibration } from "./estimate.js";
 import { buildView, dashboardLaunch, type StatusView } from "./view.js";
 
 let item: vscode.StatusBarItem | undefined;
@@ -66,8 +68,24 @@ function refresh(): void {
     const { config } = loadConfig();
     const snapshot = readJson<StatusSnapshot>(join(home, "state", "last-status.json"));
     // Same cached, incremental transcript summary the status line uses: cheap after the first read.
-    const local = getLocalSummary(config, home, new Date());
-    const view = buildView(snapshot, local, config, { showTodayCost: settings().showTodayCost });
+    const now = Date.now();
+    const local = getLocalSummary(config, home, new Date(now));
+    // Keep session/weekly limits live between real readings, using chat-panel usage from transcripts.
+    const dirs = claudeConfigDirs(config.claudeDirs);
+    const events = dirs.length
+      ? loadClaudeCodeEvents({
+          dirs,
+          since: new Date(now - SEVEN_DAYS - 24 * 60 * 60 * 1000),
+          cachePath: join(home, "cache", "claude-code-events.json"),
+        })
+      : [];
+    const calibrationPath = join(home, "state", "calibration.json");
+    const previous = readJson<Calibration>(calibrationPath) ?? {};
+    const calibration = calibrate(snapshot, events, previous);
+    if (JSON.stringify(calibration) !== JSON.stringify(previous))
+      writeJsonQuiet(calibrationPath, calibration);
+    const live = liveWindows(snapshot, events, calibration, now);
+    const view = buildView(snapshot, local, config, { now, showTodayCost: settings().showTodayCost, live });
     item.text = view.text;
     const md = new vscode.MarkdownString(view.tooltip);
     md.isTrusted = { enabledCommands: ["burnrate.openDashboard", "burnrate.refresh"] };

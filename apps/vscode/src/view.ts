@@ -73,11 +73,22 @@ export function buildView(
   snapshot: StatusSnapshot | undefined,
   local: LocalSummary | undefined,
   config: BurnrateConfig,
-  opts: { now?: number; showTodayCost?: boolean } = {},
+  opts: {
+    now?: number;
+    showTodayCost?: boolean;
+    /** Live session/weekly windows from estimate.ts (last real reading + usage since). */
+    live?: WindowInfo[];
+  } = {},
 ): StatusView {
   const now = opts.now ?? Date.now();
   const money = (usd: number) => formatMoney(usd, config.currency);
-  const windows = collectWindows(snapshot, local, now);
+  const base = collectWindows(snapshot, local, now);
+  const live = opts.live ?? [];
+  const order = { fiveHour: 0, sevenDay: 1, spendLimit: 2 };
+  // Live estimates replace the raw snapshot/local view for the windows they cover.
+  const windows = [...live, ...base.filter((w) => !live.some((l) => l.id === w.id))].sort(
+    (a, b) => order[a.id] - order[b.id],
+  );
 
   const parts = windows.map((w) => {
     const value =
@@ -127,10 +138,10 @@ export function buildView(
       level: "normal",
     });
   }
-  const hasRealLimits = windows.some((w) => !w.estimated && w.percent !== undefined);
-  const hint = hasRealLimits
+  const hasLimits = windows.some((w) => w.percent !== undefined && (live.includes(w) || !w.estimated));
+  const hint = hasLimits
     ? undefined
-    : "Plan limits load when Claude Code runs in a terminal with the BurnRate status line. Open a terminal, run claude, and send a message.";
+    : "Your session and weekly limits need one reading from Claude Code in a terminal: open a terminal, run claude, and send a message. After that they stay live while you use the chat panel.";
 
   // Tooltip: the full picture, plus where each number came from.
   const rows: string[] = ["| | |", "|:--|--:|"];
@@ -155,16 +166,21 @@ export function buildView(
   }
 
   const notes: string[] = [];
-  if (snapshot?.rateLimitsAt && windows.some((w) => !w.estimated && w.percent !== undefined)) {
+  const time = (ms: number) =>
+    new Date(ms).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+  if (live.some((w) => w.estimated)) {
+    const at = snapshot?.rateLimitsAt ? ` (${time(snapshot.rateLimitsAt)})` : "";
     notes.push(
-      `Plan limits from Claude Code, as of ${new Date(snapshot.rateLimitsAt).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}.`,
+      `"~" = live estimate: the last real reading from Claude Code${at} plus your usage since, including the chat panel. Running Claude Code in a terminal takes a fresh reading.`,
     );
+  } else if (snapshot?.rateLimitsAt && windows.some((w) => !w.estimated && w.percent !== undefined)) {
+    notes.push(`Plan limits from Claude Code, as of ${time(snapshot.rateLimitsAt)}.`);
   } else {
     notes.push(
       "Plan limits appear after Claude Code runs in a terminal with the BurnRate status line installed (`burnrate init claude-code`). The chat panel doesn't report them.",
     );
   }
-  if (windows.some((w) => w.estimated))
+  if (windows.some((w) => w.estimated && !live.includes(w)))
     notes.push("`~` marks estimates from the limits in your BurnRate config.");
   if (local)
     notes.push("Costs are API list-price equivalents; on a Pro or Max plan you aren't billed per token.");
