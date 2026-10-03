@@ -1,0 +1,19 @@
+{
+  "theme": "plain",
+  "widgets": [
+    "model",
+    "fiveHour",
+    "sevenDay",
+    "spendLimit",
+    "context",
+    "sessionCost",
+    "todayCost",
+    "blockCost",
+    "burnRate",
+    "cache"
+  ],
+  "thresholds": { "warn": 70, "danger": 90 },
+  "barWidth": 12,
+  "currency": { "code": "EUR", "symbol": "€", "rateFromUsd": 0.92 },
+  "cacheSeconds": 30
+}

@@ -1,0 +1,8 @@
+{
+  "widgets": ["model", "fiveHour", "context", "sessionCost", "burnRate", "todayCost"],
+  "limits": {
+    "fiveHour": { "costUsd": 20 },
+    "sevenDay": { "costUsd": 150 }
+  },
+  "thresholds": { "warn": 50, "danger": 80 }
+}

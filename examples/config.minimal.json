@@ -1,0 +1,4 @@
+{
+  "theme": "minimal",
+  "widgets": ["fiveHour", "sevenDay", "todayCost"]
+}
