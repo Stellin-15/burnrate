@@ -8,13 +8,17 @@ import {
   emptyTotals,
   addToTotals,
   eventCost,
+  reconcile,
   repriceEvents,
+  type ProviderCostRow,
+  type ProviderUsageRow,
   type BurnrateConfig,
   type UsageEvent,
   type UsageTotals,
 } from "@burnrate/core";
 import { findModelPricing, pricingTable } from "@burnrate/pricing";
 import { projectName } from "./commands/report.js";
+import type { StatusSnapshot } from "./snapshot.js";
 import { toCsv } from "./table.js";
 
 export interface DashboardOptions {
@@ -27,6 +31,54 @@ export interface DashboardOptions {
   staticDir?: string;
   version: string;
   now?: () => Date;
+  /** Provider usage/cost data, if the history store is available. */
+  loadSpend?: (from: string, to: string) => SpendData;
+  /** Latest numbers Claude Code gave the status line (real plan limits). */
+  loadSnapshot?: () => StatusSnapshot | undefined;
+}
+
+export interface SpendData {
+  usage: ProviderUsageRow[];
+  costs: ProviderCostRow[];
+  syncState: Array<{ provider: string; lastSyncedAt: number; lastError?: string }>;
+}
+
+/** Billed spend per day and per model, with list-price reconciliation. */
+export function buildSpend(data: SpendData) {
+  const byDay = reconcile(data.usage, data.costs, "day");
+  const days = new Map<string, Record<string, number>>();
+  for (const r of byDay) {
+    const d = days.get(r.key) ?? {};
+    d[r.provider] = (d[r.provider] ?? 0) + r.reportedUsd;
+    days.set(r.key, d);
+  }
+  return {
+    providers: [...new Set(data.syncState.map((s) => s.provider))],
+    daily: [...days].map(([date, byProvider]) => ({ date, byProvider })),
+    byDay,
+    byModel: reconcile(data.usage, data.costs, "model"),
+    totalUsd: data.costs.reduce((sum, c) => sum + c.amountUsd, 0),
+    syncState: data.syncState,
+  };
+}
+
+/** Real plan limits from the last status line run, dropping windows that have already reset. */
+export function buildLimits(snapshot: StatusSnapshot | undefined, now: Date) {
+  const rl = snapshot?.rateLimits;
+  if (!rl || !snapshot?.rateLimitsAt)
+    return { windows: [] as Array<{ id: string; usedPercent: number; resetsAt: string }> };
+  const windows = (
+    [
+      ["fiveHour", rl.five_hour],
+      ["sevenDay", rl.seven_day],
+      ["spendLimit", rl.spend_limit],
+    ] as const
+  ).flatMap(([id, w]) =>
+    w?.used_percentage !== undefined && w.resets_at !== undefined && w.resets_at * 1000 > now.getTime()
+      ? [{ id, usedPercent: w.used_percentage, resetsAt: new Date(w.resets_at * 1000).toISOString() }]
+      : [],
+  );
+  return { windows, observedAt: new Date(snapshot.rateLimitsAt).toISOString() };
 }
 
 const MIME: Record<string, string> = {
@@ -302,6 +354,14 @@ export function createDashboardServer(opts: DashboardOptions): Server {
             return json(res, 200, buildMeta(all, opts.config, opts.version));
           case "/api/usage":
             return json(res, 200, buildUsage(all, q, opts.config, now()));
+          case "/api/spend": {
+            if (!opts.loadSpend) return json(res, 200, { available: false });
+            const from = q.from?.toISOString() ?? new Date(now().getTime() - 30 * 86_400_000).toISOString();
+            const to = (q.to ?? new Date(now().getTime() + 86_400_000)).toISOString();
+            return json(res, 200, { available: true, ...buildSpend(opts.loadSpend(from, to)) });
+          }
+          case "/api/limits":
+            return json(res, 200, buildLimits(opts.loadSnapshot?.(), now()));
           case "/api/pricing":
             return json(res, 200, pricingTable);
           case "/api/whatif": {

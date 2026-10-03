@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG, type UsageEvent } from "@burnrate/core";
-import { createDashboardServer } from "./server.js";
+import { buildLimits, buildSpend, createDashboardServer } from "./server.js";
 
 const M = 1_000_000;
 let n = 0;
@@ -180,5 +180,78 @@ describe("/api/usage details", () => {
     const u = await getJson("/api/usage");
     expect(u.sessions[0]).toMatchObject({ label: "web", startedAt: "2026-10-01T10:00:00Z" });
     expect(u.cacheSavingsUsd).toBe(0); // no cache reads in these events
+  });
+});
+
+describe("buildSpend / buildLimits", () => {
+  it("groups billed spend per day and provider and reconciles by model", () => {
+    const day = (d: string) => ({
+      bucketStart: `${d}T00:00:00.000Z`,
+      bucketEnd: `${d}T23:59:59.000Z`,
+      scope: "",
+    });
+    const s = buildSpend({
+      usage: [
+        {
+          provider: "anthropic",
+          ...day("2026-10-01"),
+          model: "claude-opus-5-5",
+          uncachedInputTokens: 0,
+          cacheReadTokens: 0,
+          cacheWriteTokens: 0,
+          cacheWriteLongTokens: 0,
+          outputTokens: 1_000_000,
+        },
+      ],
+      costs: [
+        {
+          provider: "anthropic",
+          ...day("2026-10-01"),
+          item: "Opus output",
+          model: "claude-opus-5-5",
+          amountUsd: 19,
+        },
+        { provider: "openai", ...day("2026-10-01"), item: "gpt-5, output", model: "gpt-5", amountUsd: 3 },
+      ],
+      syncState: [
+        { provider: "anthropic", lastSyncedAt: 1 },
+        { provider: "openai", lastSyncedAt: 1 },
+      ],
+    });
+    expect(s.totalUsd).toBe(22);
+    expect(s.daily).toEqual([{ date: "2026-10-01", byProvider: { anthropic: 19, openai: 3 } }]);
+    expect(s.byModel[0]).toMatchObject({
+      key: "claude-opus-5-5",
+      reportedUsd: 19,
+      computedUsd: 20,
+      differenceUsd: -1,
+    });
+  });
+
+  it("returns only plan-limit windows that haven't reset yet", () => {
+    const now = new Date("2026-10-03T12:00:00Z");
+    const sec = (iso: string) => Date.parse(iso) / 1000;
+    const limits = buildLimits(
+      {
+        version: 1,
+        updatedAt: now.getTime(),
+        rateLimitsAt: now.getTime() - 60_000,
+        rateLimits: {
+          five_hour: { used_percentage: 39, resets_at: sec("2026-10-03T14:00:00Z") },
+          seven_day: { used_percentage: 37, resets_at: sec("2026-10-01T00:00:00Z") },
+        },
+        recentSessions: [],
+      },
+      now,
+    );
+    expect(limits.windows).toEqual([
+      { id: "fiveHour", usedPercent: 39, resetsAt: "2026-10-03T14:00:00.000Z" },
+    ]);
+    expect(buildLimits(undefined, now).windows).toEqual([]);
+  });
+
+  it("reports spend as unavailable when there is no store", async () => {
+    expect(await getJson("/api/spend")).toEqual({ available: false });
+    expect(await getJson("/api/limits")).toEqual({ windows: [] });
   });
 });
