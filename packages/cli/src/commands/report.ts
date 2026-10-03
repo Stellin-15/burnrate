@@ -1,5 +1,6 @@
 import {
   computeBlocks,
+  emptyTotals,
   formatMoney,
   formatTokens,
   groupEvents,
@@ -102,10 +103,32 @@ const rawCells = (t: UsageTotals) => [
 ];
 
 export interface ReportResult {
+  /** First column, then extraHeaders, then the token/cost columns. */
   headers: string[];
+  /** Columns between the label and the token columns (e.g. block status, session start). */
+  extraHeaders: string[];
   rows: Array<{ key: string; label: string; extra?: string[]; totals: UsageTotals }>;
   totals: UsageTotals;
 }
+
+/** Sum several rows' totals, e.g. for an "N more" line under a --limit-ed table. */
+export function mergeTotals(list: UsageTotals[]): UsageTotals {
+  const t = emptyTotals();
+  for (const x of list) {
+    t.requests += x.requests;
+    t.inputTokens += x.inputTokens;
+    t.outputTokens += x.outputTokens;
+    t.cacheReadTokens += x.cacheReadTokens;
+    t.cacheWriteTokens += x.cacheWriteTokens;
+    t.totalTokens += x.totalTokens;
+    t.costUsd += x.costUsd;
+    t.unpricedRequests += x.unpricedRequests;
+    for (const m of x.models) if (!t.models.includes(m)) t.models.push(m);
+  }
+  return t;
+}
+
+const SESSION_START = new Intl.DateTimeFormat(undefined, { dateStyle: "short", timeStyle: "short" });
 
 export function buildReport(events: UsageEvent[], view: ReportView, now = new Date()): ReportResult {
   const totals = sumEvents(events);
@@ -113,6 +136,7 @@ export function buildReport(events: UsageEvent[], view: ReportView, now = new Da
     const blocks = computeBlocks(events);
     return {
       headers: ["Block start", "Status", ...TOKEN_HEADERS],
+      extraHeaders: ["Status"],
       rows: blocks.map((b) => ({
         key: b.start.toISOString(),
         label: b.start.toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" }),
@@ -136,11 +160,40 @@ export function buildReport(events: UsageEvent[], view: ReportView, now = new Da
     session: "Session",
     tool: "Tool",
   }[by];
+  if (by === "session") {
+    // Events are time-ordered, so the first one seen per session is when it started.
+    const firstOf = new Map<string, UsageEvent>();
+    for (const e of events) {
+      const k = e.sessionId ?? "(unknown)";
+      if (!firstOf.has(k)) firstOf.set(k, e);
+    }
+    return {
+      headers: [header, "Started", "Project", ...TOKEN_HEADERS],
+      extraHeaders: ["Started", "Project"],
+      rows: groupEvents(events, by).map((r) => {
+        const first = firstOf.get(r.key);
+        return {
+          key: r.key,
+          label: r.key.slice(0, 8),
+          extra: [
+            first ? SESSION_START.format(new Date(first.timestamp)) : "",
+            first?.project ? projectName(first.project) : "",
+          ],
+          totals: r.totals,
+        };
+      }),
+      totals,
+    };
+  }
+  // Merge spellings of the same model (dated snapshots, Bedrock ids) into one row, like the dashboard.
+  const grouped =
+    by === "model" ? events.map((e) => ({ ...e, model: findModelPricing(e.model)?.id ?? e.model })) : events;
   return {
     headers: [header, ...TOKEN_HEADERS],
-    rows: groupEvents(events, by).map((r) => ({
+    extraHeaders: [],
+    rows: groupEvents(grouped, by).map((r) => ({
       key: r.key,
-      label: by === "project" ? projectName(r.key) : by === "session" ? r.key.slice(0, 8) : r.key,
+      label: by === "project" ? projectName(r.key) : r.key,
       totals: r.totals,
     })),
     totals,
@@ -178,6 +231,7 @@ export async function runReport(args: ReportArgs): Promise<number> {
     : timeView
       ? report.rows.slice(-args.limit)
       : report.rows.slice(0, args.limit);
+  const omitted = report.rows.filter((r) => !rows.includes(r));
 
   if (args.format === "json") {
     console.log(
@@ -186,7 +240,12 @@ export async function runReport(args: ReportArgs): Promise<number> {
           view: args.view,
           since: since?.toISOString(),
           pricingUpdatedAt: pricingTable.updatedAt,
-          rows: rows.map((r) => ({ key: r.key, ...(r.extra && { status: r.extra[0] }), ...r.totals })),
+          rows: rows.map((r) => ({
+            key: r.key,
+            ...Object.fromEntries(report.extraHeaders.map((h, i) => [h.toLowerCase(), r.extra?.[i] ?? ""])),
+            ...r.totals,
+          })),
+          omittedRows: omitted.length,
           totals: report.totals,
         },
         null,
@@ -198,7 +257,7 @@ export async function runReport(args: ReportArgs): Promise<number> {
   if (args.format === "csv") {
     const headers = [
       report.headers[0]!,
-      ...(args.view === "blocks" ? ["Status"] : []),
+      ...report.extraHeaders,
       "Requests",
       "Input",
       "Output",
@@ -221,13 +280,24 @@ export async function runReport(args: ReportArgs): Promise<number> {
     console.log(`No Claude Code usage found since ${since?.toLocaleDateString()}.`);
     return 0;
   }
-  const extraCols = args.view === "blocks" ? 1 : 0;
-  const footer = ["Total", ...Array(extraCols).fill(""), ...tokenCells(report.totals, money)];
+  const blanks = report.extraHeaders.map(() => "");
+  const body = rows.map((r) => [r.label, ...(r.extra ?? blanks), ...tokenCells(r.totals, money)]);
+  // Keep the visible rows adding up to the Total line when --limit hides some.
+  if (omitted.length) {
+    const label = `${omitted.length} ${timeView ? "earlier" : "more"}`;
+    const rest = [label, ...blanks, ...tokenCells(mergeTotals(omitted.map((r) => r.totals)), money)].map(
+      (c) => paint("dim", c),
+    );
+    if (timeView) body.unshift(rest);
+    else body.push(rest);
+  }
+  const footer = ["Total", ...blanks, ...tokenCells(report.totals, money)];
   console.log(
     renderTable(
       report.headers,
-      rows.map((r) => [r.label, ...(r.extra ?? []), ...tokenCells(r.totals, money)]),
+      body,
       footer.map((c) => paint("bold", c)),
+      1 + report.extraHeaders.length,
     ),
   );
   const notes = [
