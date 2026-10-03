@@ -114,7 +114,7 @@ Works with Claude Code first, then other tools (Codex CLI, Gemini CLI, Cursor, O
 
 ## 4. Architecture
 
-TypeScript monorepo, pnpm workspaces, Node 20+.
+TypeScript monorepo, pnpm workspaces, Node 22+ (moved from 20 on 2026-10-03; Node 20 reached end of life in April 2026).
 
 ```
 burnrate/
