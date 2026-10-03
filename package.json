@@ -16,7 +16,7 @@
     "format:check": "prettier --check .",
     "validate:pricing": "pnpm --filter @burnrate/pricing run validate",
     "changeset": "changeset",
-    "ci": "pnpm lint && pnpm format:check && pnpm validate:pricing && pnpm typecheck && pnpm test"
+    "check": "pnpm lint && pnpm format:check && pnpm validate:pricing && pnpm typecheck && pnpm test"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.0",

@@ -9,7 +9,7 @@ corepack enable        # provides the pinned pnpm version
 pnpm install
 pnpm build             # builds every package; the CLI bundles to packages/cli/dist/cli.js
 pnpm test              # Vitest, runs against TypeScript sources (no build needed)
-pnpm ci                # everything CI runs: lint, format check, pricing validation, typecheck, tests
+pnpm check             # everything CI runs: lint, format check, pricing validation, typecheck, tests
 ```
 
 Try your local build:
