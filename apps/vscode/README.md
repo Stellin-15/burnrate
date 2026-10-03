@@ -16,7 +16,7 @@ $(pulse) 5h 39% ↻ 2h16m │ 7d 37% ↻ 4d4h │ $46.12 today
 
 [BurnRate](https://github.com/Stellin-15/burnrate) set up for Claude Code (`burnrate init claude-code`).
 
-The Claude Code chat panel doesn't report plan limits, so they come from the BurnRate status line. They refresh whenever Claude Code runs in a terminal, and the status bar updates within a second. Between those runs, it shows the last known limits until their window resets. Today's cost is read from Claude Code's local transcripts every 30 seconds.
+The Claude Code chat panel doesn't report plan limits, so BurnRate needs **one reading** from Claude Code running in a terminal (`claude`, then send a message). From that reading it works out how big your session and weekly windows are. After that, the numbers stay live while you use the chat panel: BurnRate adds your new usage from Claude Code's transcripts and marks those values with `~`. Each later terminal session takes a fresh reading. Today's cost is read from the transcripts every 30 seconds.
 
 ## Privacy
 
