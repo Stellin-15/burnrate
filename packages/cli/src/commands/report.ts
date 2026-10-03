@@ -11,8 +11,9 @@ import {
   type UsageTotals,
 } from "@burnrate/core";
 import { findModelPricing, pricingTable } from "@burnrate/pricing";
-import { claudeConfigDirs, loadClaudeCodeEvents } from "@burnrate/adapter-claude-code";
+import { claudeConfigDirs } from "@burnrate/adapter-claude-code";
 import { colorEnabled, paintAnsi, paintNone } from "../ansi.js";
+import { loadClaudeHistory } from "../history.js";
 import { renderTable, toCsv } from "../table.js";
 
 export const REPORT_VIEWS = [
@@ -215,13 +216,16 @@ export async function runReport(args: ReportArgs): Promise<number> {
   }
 
   const dirs = claudeConfigDirs(config.claudeDirs);
-  if (!dirs.length) {
+  const history = loadClaudeHistory({ dirs, since });
+  if (!dirs.length && !history.events.length) {
     console.error(
       "No Claude Code data found. Looked for ~/.claude/projects (and CLAUDE_CONFIG_DIR). Run `burnrate doctor` for details.",
     );
     return 1;
   }
-  const events = filterEvents(loadClaudeCodeEvents({ dirs, since }), args);
+  if (history.problem && args.format === "table")
+    console.error(`note: ${history.problem}; showing transcripts only.`);
+  const events = filterEvents(history.events, args);
   const report = buildReport(events, args.view, now);
   // --limit keeps the most recent rows for time views and the top rows (by cost) otherwise.
   const timeView =

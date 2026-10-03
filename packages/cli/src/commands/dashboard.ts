@@ -4,8 +4,10 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { burnrateHome, loadConfig, type UsageEvent } from "@burnrate/core";
-import { claudeConfigDirs, loadClaudeCodeEvents } from "@burnrate/adapter-claude-code";
+import { claudeConfigDirs } from "@burnrate/adapter-claude-code";
+import { openStoreQuietly } from "@burnrate/store";
 import pkg from "../../package.json" with { type: "json" };
+import { loadClaudeHistory } from "../history.js";
 import { createDashboardServer } from "../server.js";
 
 export interface DashboardArgs {
@@ -50,12 +52,15 @@ export async function runDashboard(args: DashboardArgs): Promise<number> {
     console.error("No Claude Code data found yet. The dashboard will be empty until you use Claude Code.");
 
   const cachePath = join(burnrateHome(), "cache", "claude-code-history.json");
+  // One connection for the dashboard's lifetime; history survives Claude Code's transcript cleanup.
+  const { store, problem } = openStoreQuietly();
+  if (problem) console.error(`note: ${problem}; the dashboard will show transcripts only.`);
   let events: UsageEvent[] = [];
   let loadedAt = 0;
   const loadEvents = () => {
     // Incremental reads make refreshes cheap; cap at one per 5 seconds anyway.
     if (Date.now() - loadedAt > 5000) {
-      events = dirs.length ? loadClaudeCodeEvents({ dirs, cachePath }) : [];
+      events = loadClaudeHistory({ dirs, cachePath, store }).events;
       loadedAt = Date.now();
     }
     return events;
@@ -98,7 +103,13 @@ export async function runDashboard(args: DashboardArgs): Promise<number> {
   if (args.open !== false && staticDir) openBrowser(url);
 
   await new Promise<void>((resolveStop) => {
-    const stop = () => server.close(() => resolveStop());
+    const stop = () => {
+      server.closeAllConnections();
+      server.close(() => {
+        store?.close();
+        resolveStop();
+      });
+    };
     process.once("SIGINT", stop);
     process.once("SIGTERM", stop);
   });
