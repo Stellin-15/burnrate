@@ -2,7 +2,7 @@
   "name": "burnrate-vscode",
   "displayName": "BurnRate",
   "description": "Your Claude Code usage limits and today's cost in the VS Code status bar. Local-only.",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "publisher": "burnrate",
   "license": "MIT",
   "private": true,

@@ -1,15 +1,7 @@
 {
   "name": "burnrate-cli",
-  "version": "0.1.0",
-  "description": "Live usage-limit meter and cost reports for Claude Code and other AI coding tools. Local-first.",
-  "license": "MIT",
-  "type": "module",
-  "bin": {
-    "burnrate": "./dist/cli.js"
-  },
-  "files": [
-    "dist"
-  ],
+  "version": "0.4.0",
+  "description": "See how much of your Claude usage limit is left and what it costs: a live meter for Claude Code, a local dashboard, and cost reports. Local-first.",
   "keywords": [
     "claude-code",
     "statusline",
@@ -19,12 +11,34 @@
     "tokens",
     "anthropic"
   ],
+  "homepage": "https://github.com/Stellin-15/burnrate#readme",
+  "bugs": {
+    "url": "https://github.com/Stellin-15/burnrate/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Stellin-15/burnrate.git",
+    "directory": "packages/cli"
+  },
+  "license": "MIT",
+  "author": "Stellin",
+  "type": "module",
+  "bin": {
+    "burnrate": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "engines": {
     "node": ">=22.13"
   },
   "scripts": {
     "build": "tsup && node scripts/copy-dashboard.mjs",
     "typecheck": "tsc -p tsconfig.json"
+  },
+  "optionalDependencies": {
+    "@napi-rs/keyring": "^2.1.0"
   },
   "devDependencies": {
     "@burnrate/adapter-claude-code": "workspace:*",
@@ -34,8 +48,5 @@
     "@burnrate/store": "workspace:*",
     "@burnrate/adapter-anthropic-api": "workspace:*",
     "@burnrate/adapter-openai-api": "workspace:*"
-  },
-  "optionalDependencies": {
-    "@napi-rs/keyring": "^2.1.0"
   }
 }
