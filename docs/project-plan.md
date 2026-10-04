@@ -9,7 +9,7 @@ Alternate names if taken: `tokenmeter`, `spendline`, `gaugecode`, `limitlight`
 
 ## 0. Status and decisions (updated 2026-10-03)
 
-**Phases 0–3 are built.** `burnrate init claude-code` adds a live meter to Claude Code, `burnrate report` gives cost tables, `burnrate dashboard` serves a local web dashboard (budgets, cost calculator, plan limits, API spend), and `burnrate keys` / `sync` / `spend` track what Anthropic and OpenAI organizations are billed. 181 unit tests and 9 browser end-to-end tests pass, along with lint, format, typecheck, and pricing validation, on macOS, Linux, and Windows. How to use it: [README.md](README.md). What external formats it relies on: [docs/research.md](docs/research.md).
+**Phases 0–3 are built.** `burnrate init claude-code` adds a live meter to Claude Code, `burnrate report` gives cost tables, `burnrate dashboard` serves a local web dashboard (budgets, cost calculator, plan limits, API spend), and `burnrate keys` / `sync` / `spend` track what Anthropic and OpenAI organizations are billed. 181 unit tests and 9 browser end-to-end tests pass, along with lint, format, typecheck, and pricing validation, on macOS, Linux, and Windows. How to use it: [README.md](../README.md). What external formats it relies on: [docs/research.md](research.md).
 
 Tested on real data (2026-10-03): `doctor` and `report` parsed 1,750 real requests with every model priced. Per-model costs match a hand recomputation from published rates, including the 1-hour cache-write split. The live meter shows real 5h/7d limits.
 
