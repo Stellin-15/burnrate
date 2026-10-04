@@ -1,0 +1,54 @@
+name: Release
+
+# Push a tag like v0.4.0 to build, test, and publish a GitHub Release with
+# ready-to-install files: the CLI (npm tarball) and the VS Code extension (.vsix).
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm test
+
+      - name: Check the tag matches the package versions
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          for f in packages/cli/package.json apps/vscode/package.json; do
+            v=$(node -p "require('./$f').version")
+            if [ "$v" != "$tag" ]; then echo "$f is $v, tag is $tag"; exit 1; fi
+          done
+
+      - name: Package
+        run: |
+          mkdir -p release
+          (cd packages/cli && pnpm pack --pack-destination ../../release)
+          mv release/burnrate-cli-*.tgz release/burnrate-cli.tgz
+          pnpm --filter burnrate-vscode run package
+          cp apps/vscode/burnrate-vscode.vsix release/burnrate-vscode.vsix
+
+      - name: Smoke test the packaged CLI
+        run: |
+          npm install -g ./release/burnrate-cli.tgz
+          burnrate --version
+          burnrate statusline --demo --theme plain
+
+      - name: Publish the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node scripts/release-notes.mjs "$GITHUB_REF_NAME" > notes.md
+          gh release create "$GITHUB_REF_NAME" release/burnrate-cli.tgz release/burnrate-vscode.vsix \
+            --title "BurnRate $GITHUB_REF_NAME" --notes-file notes.md
